@@ -14,104 +14,115 @@ class MyApp extends StatelessWidget {
   Widget build(BuildContext context) {
     return MaterialApp(
       debugShowCheckedModeBanner: false,
-      title: 'Tahap 6 - Scrollable & Keyboard',
+      title: 'Tahap 7 - Navigation Dasar',
       theme: ThemeData(primarySwatch: Colors.indigo),
-      home: const ScrollableFormPage(),
+      home: const HomePage(),
     );
   }
 }
 
-class ScrollableFormPage extends StatelessWidget {
-  const ScrollableFormPage({super.key});
+// 1. SKRIN UTAMA (HomePage)
+class HomePage extends StatelessWidget {
+  const HomePage({super.key});
 
   @override
   Widget build(BuildContext context) {
     return Scaffold(
       appBar: AppBar(
-        title: const Text('Tahap 6 - Scrollable Content'),
+        title: const Text('Tahap 7 - Home Page'),
       ),
-      // SingleChildScrollView mencegah "Bottom overflowed by XX pixels" saat keyboard muncul
-      body: SingleChildScrollView(
-        padding: const EdgeInsets.all(20.0),
-        child: Column(
-          crossAxisAlignment: CrossAxisAlignment.stretch,
-          children: [
-            // Identitas Mahasiswa
-            Container(
-              padding: const EdgeInsets.all(16),
-              decoration: BoxDecoration(
-                color: Colors.indigo.shade50,
-                borderRadius: BorderRadius.circular(10),
-                border: Border.all(color: Colors.indigo),
-              ),
-              child: Column(
-                children: [
-                  const Icon(Icons.account_circle, size: 60, color: Colors.indigo),
-                  const SizedBox(height: 8),
-                  Text(
-                    '$studentId - $studentName',
-                    style: const TextStyle(fontWeight: FontWeight.bold, fontSize: 16),
-                    textAlign: TextAlign.center,
+      body: Center(
+        child: Padding(
+          padding: const EdgeInsets.all(20.0),
+          child: Column(
+            mainAxisAlignment: MainAxisAlignment.center,
+            children: [
+              // Kad Pengenalan Diri
+              Card(
+                elevation: 3,
+                child: Padding(
+                  padding: const EdgeInsets.all(16.0),
+                  child: Column(
+                    children: [
+                      const Icon(Icons.person, size: 50, color: Colors.indigo),
+                      const SizedBox(height: 8),
+                      Text(
+                        '$studentId - $studentName',
+                        style: const TextStyle(fontWeight: FontWeight.bold, fontSize: 16),
+                        textAlign: TextAlign.center,
+                      ),
+                      const SizedBox(height: 4),
+                      const Text('Skrin: Home Page (Halaman Utama)'),
+                    ],
                   ),
-                  const Text('Form Profil Pengguna Mahasiswa'),
-                ],
+                ),
               ),
-            ),
-            const SizedBox(height: 20),
+              const SizedBox(height: 30),
+              // Butang Navigasi ke DetailPage via Navigator.push
+              ElevatedButton.icon(
+                icon: const Icon(Icons.arrow_forward),
+                label: const Text('Buka Detail Page'),
+                style: ElevatedButton.styleFrom(
+                  padding: const EdgeInsets.symmetric(horizontal: 24, vertical: 14),
+                ),
+                onPressed: () {
+                  Navigator.push(
+                    context,
+                    MaterialPageRoute(
+                      builder: (context) => const DetailPage(),
+                    ),
+                  );
+                },
+              ),
+            ],
+          ),
+        ),
+      ),
+    );
+  }
+}
 
-            // Form Fields berurutan ke bawah
-            const TextField(
-              decoration: InputDecoration(
-                labelText: 'Username',
-                border: OutlineInputBorder(),
-                prefixIcon: Icon(Icons.person),
+// 2. SKRIN TERPERINCI (DetailPage)
+class DetailPage extends StatelessWidget {
+  const DetailPage({super.key});
+
+  @override
+  Widget build(BuildContext context) {
+    return Scaffold(
+      appBar: AppBar(
+        title: const Text('Tahap 7 - Detail Page'),
+        // Butang kembali automatik (Leading Back Icon) disediakan secara lalai oleh Flutter
+      ),
+      body: Center(
+        child: Padding(
+          padding: const EdgeInsets.all(20.0),
+          child: Column(
+            mainAxisAlignment: MainAxisAlignment.center,
+            children: [
+              Text(
+                'Identiti: $studentId - $studentName',
+                style: const TextStyle(fontWeight: FontWeight.bold, fontSize: 16),
+                textAlign: TextAlign.center,
               ),
-            ),
-            const SizedBox(height: 16),
-            const TextField(
-              decoration: InputDecoration(
-                labelText: 'Email Kampus',
-                border: OutlineInputBorder(),
-                prefixIcon: Icon(Icons.email),
+              const SizedBox(height: 16),
+              const Text(
+                'Anda kini berada di DetailPage.\nTimbunan skrin berjaya ditambah melalui Navigator.push().',
+                textAlign: TextAlign.center,
               ),
-            ),
-            const SizedBox(height: 16),
-            const TextField(
-              decoration: InputDecoration(
-                labelText: 'Program Studi',
-                border: OutlineInputBorder(),
-                prefixIcon: Icon(Icons.school),
+              const SizedBox(height: 30),
+              // Butang Manual untuk Kembali via Navigator.pop
+              OutlinedButton.icon(
+                icon: const Icon(Icons.arrow_back),
+                label: const Text('Kembali (Navigator.pop)'),
+                style: OutlinedButton.styleFrom(
+                  padding: const EdgeInsets.symmetric(horizontal: 24, vertical: 14),
+                ),
+                onPressed: () {
+                  Navigator.pop(context);
+                },
               ),
-            ),
-            const SizedBox(height: 16),
-            const TextField(
-              maxLines: 4,
-              decoration: InputDecoration(
-                labelText: 'Bio / Catatan',
-                border: OutlineInputBorder(),
-                alignLabelWithHint: true,
-              ),
-            ),
-            const SizedBox(height: 16),
-            // Field uji keyboard di bagian paling bawah layar
-            const TextField(
-              decoration: InputDecoration(
-                labelText: 'Uji Keyboard (Fokus ke sini)',
-                hintText: 'Keyboard akan mengangkat viewport ini',
-                border: OutlineInputBorder(),
-                prefixIcon: Icon(Icons.keyboard),
-              ),
-            ),
-            const SizedBox(height: 24),
-            ElevatedButton.icon(
-              onPressed: () {},
-              icon: const Icon(Icons.save),
-              label: const Text('Simpan Data Profil'),
-              style: ElevatedButton.styleFrom(
-                padding: const EdgeInsets.symmetric(vertical: 16),
-              ),
-            ),
-          ],
+            ],
+          ),
         ),
       ),
     );
