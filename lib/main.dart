@@ -14,106 +14,162 @@ class MyApp extends StatelessWidget {
   Widget build(BuildContext context) {
     return MaterialApp(
       debugShowCheckedModeBanner: false,
-      title: 'Tahap 4 - Expanded, Flexible, Wrap',
-      theme: ThemeData(primarySwatch: Colors.deepPurple),
-      home: const FlexWrapDemoPage(),
+      title: 'Tahap 5 - Responsive GridView',
+      theme: ThemeData(primarySwatch: Colors.teal),
+      home: const ResponsiveGridPage(),
     );
   }
 }
 
-class FlexWrapDemoPage extends StatelessWidget {
-  const FlexWrapDemoPage({super.key});
+class ResponsiveGridPage extends StatelessWidget {
+  const ResponsiveGridPage({super.key});
 
-  final List<String> skills = const [
-    'Flutter',
-    'Dart',
-    'Responsive Design',
-    'State Management',
-    'REST API',
-    'Git & GitHub',
-    'Clean Architecture',
+  // Data dummy course (minimal 5 item)
+  final List<Map<String, dynamic>> courses = const [
+    {
+      'code': 'MOB01',
+      'title': 'Dart Fundamentals',
+      'status': 'Completed',
+      'color': Colors.blue,
+    },
+    {
+      'code': 'MOB02',
+      'title': 'Flutter UI Dasar',
+      'status': 'Completed',
+      'color': Colors.green,
+    },
+    {
+      'code': 'MOB03',
+      'title': 'State Management',
+      'status': 'Active',
+      'color': Colors.orange,
+    },
+    {
+      'code': 'MOB04',
+      'title': 'Responsive Layout',
+      'status': 'Active',
+      'color': Colors.teal,
+    },
+    {
+      'code': 'MOB05',
+      'title': 'Flutter Navigation',
+      'status': 'Planned',
+      'color': Colors.deepPurple,
+    },
+    {
+      'code': 'MOB06',
+      'title': 'API & Database Integration',
+      'status': 'Planned',
+      'color': Colors.redAccent,
+    },
   ];
 
-  Widget _buildBox(String label, Color color) {
-    return Container(
-      height: 90,
-      decoration: BoxDecoration(
-        color: color,
-        borderRadius: BorderRadius.circular(8),
-      ),
-      child: Center(
-        child: Text(
-          label,
-          textAlign: TextAlign.center,
-          style: const TextStyle(
-            color: Colors.white,
-            fontWeight: FontWeight.bold,
-          ),
-        ),
-      ),
-    );
+  // Fungsi penentu jumlah kolom berdasarkan breakpoint lebar layar
+  int columnsFor(double width) {
+    if (width < 600) return 1;
+    if (width < 840) return 2;
+    return 3;
   }
 
   @override
   Widget build(BuildContext context) {
     return Scaffold(
       appBar: AppBar(
-        title: const Text('Tahap 4 - Flex & Wrap'),
+        title: const Text('Tahap 5 - Responsive GridView'),
       ),
-      body: SingleChildScrollView(
-        padding: const EdgeInsets.all(16.0),
-        child: Column(
-          crossAxisAlignment: CrossAxisAlignment.start,
-          children: [
-            Text(
-              '$studentId - $studentName',
-              style: const TextStyle(fontSize: 16, fontWeight: FontWeight.bold),
-            ),
-            const SizedBox(height: 20),
-            const Text(
-              '1. Pembagian Ruang Proporsional (Expanded Flex 2:1)',
-              style: TextStyle(fontWeight: FontWeight.bold),
-            ),
-            const SizedBox(height: 10),
-            // Panel Row dengan Expanded Flex 2:1
-            Row(
+      body: LayoutBuilder(
+        builder: (context, constraints) {
+          final columnCount = columnsFor(constraints.maxWidth);
+
+          return Padding(
+            padding: const EdgeInsets.all(16.0),
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
               children: [
-                Expanded(
-                  flex: 2,
-                  child: _buildBox('Panel Utama (Flex: 2)', Colors.deepPurple),
+                // Header identitas mahasiswa
+                Container(
+                  width: double.infinity,
+                  padding: const EdgeInsets.all(12),
+                  decoration: BoxDecoration(
+                    color: Colors.teal.shade50,
+                    borderRadius: BorderRadius.circular(8),
+                    border: Border.all(color: Colors.teal),
+                  ),
+                  child: Row(
+                    mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                    children: [
+                      Text(
+                        '$studentId - $studentName',
+                        style: const TextStyle(fontWeight: FontWeight.bold),
+                      ),
+                      Text(
+                        'Kolom: $columnCount (Lebar: ${constraints.maxWidth.toStringAsFixed(0)} px)',
+                        style: const TextStyle(fontWeight: FontWeight.w600),
+                      ),
+                    ],
+                  ),
                 ),
-                const SizedBox(width: 10),
+                const SizedBox(height: 16),
+                // GridView responsif
                 Expanded(
-                  flex: 1,
-                  child: _buildBox('Panel Samping (Flex: 1)', Colors.indigo),
+                  child: GridView.builder(
+                    gridDelegate: SliverGridDelegateWithFixedCrossAxisCount(
+                      crossAxisCount: columnCount,
+                      crossAxisSpacing: 12,
+                      mainAxisSpacing: 12,
+                      childAspectRatio: columnCount == 1 ? 3.0 : 2.0,
+                    ),
+                    itemCount: courses.length,
+                    itemBuilder: (context, index) {
+                      final item = courses[index];
+                      return Card(
+                        elevation: 2,
+                        shape: RoundedRectangleBorder(
+                          borderRadius: BorderRadius.circular(10),
+                        ),
+                        child: Padding(
+                          padding: const EdgeInsets.all(12.0),
+                          child: Row(
+                            children: [
+                              CircleAvatar(
+                                backgroundColor: item['color'] as Color,
+                                foregroundColor: Colors.white,
+                                child: Text((item['code'] as String).substring(3)),
+                              ),
+                              const SizedBox(width: 12),
+                              Expanded(
+                                child: Column(
+                                  mainAxisAlignment: MainAxisAlignment.center,
+                                  crossAxisAlignment: CrossAxisAlignment.start,
+                                  children: [
+                                    Text(
+                                      item['title'] as String,
+                                      style: const TextStyle(fontWeight: FontWeight.bold),
+                                      maxLines: 1,
+                                      overflow: TextOverflow.ellipsis,
+                                    ),
+                                    const SizedBox(height: 4),
+                                    Text(
+                                      'Kode: ${item['code']} • ${item['status']}',
+                                      style: TextStyle(
+                                        color: Colors.grey.shade700,
+                                        fontSize: 12,
+                                      ),
+                                    ),
+                                  ],
+                                ),
+                              ),
+                            ],
+                          ),
+                        ),
+                      );
+                    },
+                  ),
                 ),
               ],
             ),
-            const SizedBox(height: 28),
-            const Text(
-              '2. Penanganan Elemen Dinamis (Wrap vs Row)',
-              style: TextStyle(fontWeight: FontWeight.bold),
-            ),
-            const SizedBox(height: 10),
-            // Wrap widget untuk chip skill agar turun baris saat layar sempit
-            Wrap(
-              spacing: 8.0,
-              runSpacing: 8.0,
-              children: skills
-                  .map(
-                    (skill) => Chip(
-                      avatar: CircleAvatar(
-                        backgroundColor: Colors.deepPurple.shade100,
-                        child: const Icon(Icons.check, size: 14, color: Colors.deepPurple),
-                      ),
-                      label: Text(skill),
-                      backgroundColor: Colors.grey.shade200,
-                    ),
-                  )
-                  .toList(),
-            ),
-          ],
-        ),
+          );
+        },
       ),
     );
   }
