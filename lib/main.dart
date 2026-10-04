@@ -14,52 +14,79 @@ class MyApp extends StatelessWidget {
   Widget build(BuildContext context) {
     return MaterialApp(
       debugShowCheckedModeBanner: false,
-      title: 'Tahap 13 - Form & Validation',
+      title: 'Tahap 14 - Feedback UI',
       theme: ThemeData(useMaterial3: true, colorSchemeSeed: Colors.indigo),
-      home: const FeedbackFormPage(),
+      home: const FeedbackDemoPage(),
     );
   }
 }
 
-class FeedbackFormPage extends StatefulWidget {
-  const FeedbackFormPage({super.key});
+class FeedbackDemoPage extends StatefulWidget {
+  const FeedbackDemoPage({super.key});
 
   @override
-  State<FeedbackFormPage> createState() => _FeedbackFormPageState();
+  State<FeedbackDemoPage> createState() => _FeedbackDemoPageState();
 }
 
-class _FeedbackFormPageState extends State<FeedbackFormPage> {
-  // GlobalKey untuk mengontrol state dan validasi form
-  final _formKey = GlobalKey<FormState>();
+class _FeedbackDemoPageState extends State<FeedbackDemoPage> {
+  bool _isLoading = false;
+  String _actionStatus = 'Belum ada aksi yang diproses.';
 
-  // Controller form dengan nilai default identitas
-  final TextEditingController _nameController = TextEditingController(text: studentName);
-  final TextEditingController _idController = TextEditingController(text: studentId);
-  final TextEditingController _commentController = TextEditingController();
+  // Fungsi menampilkan konfirmasi Dialog lalu simulasi proses async
+  Future<void> _handleConfirmAction() async {
+    // 1. TAMPILKAN ALERTDIALOG KONFIRMASI
+    final bool? confirmed = await showDialog<bool>(
+      context: context,
+      builder: (BuildContext ctx) {
+        return AlertDialog(
+          title: const Text('Konfirmasi Pendaftaran'),
+          content: Text(
+            'Apakah Anda yakin ingin mendaftarkan kursus ini atas nama $studentName ($studentId)?',
+          ),
+          actions: [
+            TextButton(
+              onPressed: () => Navigator.pop(ctx, false),
+              child: const Text('Batal'),
+            ),
+            ElevatedButton(
+              onPressed: () => Navigator.pop(ctx, true),
+              child: const Text('Ya, Daftarkan'),
+            ),
+          ],
+        );
+      },
+    );
 
-  String _submittedResult = '';
-
-  @override
-  void dispose() {
-    _nameController.dispose();
-    _idController.dispose();
-    _commentController.dispose();
-    super.dispose();
-  }
-
-  void _submitForm() {
-    // Memeriksa apakah seluruh validator mengembalikan null (lolos validasi)
-    if (_formKey.currentState!.validate()) {
+    // Jika pengguna memilih "Ya, Daftarkan"
+    if (confirmed == true && mounted) {
       setState(() {
-        _submittedResult =
-            'Terkirim: ${_commentController.text} (Oleh: ${_nameController.text} - ${_idController.text})';
+        _isLoading = true;
+        _actionStatus = 'Sedang memproses pendaftaran...';
       });
-      ScaffoldMessenger.of(context).showSnackBar(
-        const SnackBar(
-          content: Text('Formulir berhasil divalidasi dan disimpan!'),
-          backgroundColor: Colors.green,
-        ),
-      );
+
+      // 2. SIMULASI PROSES DENGAN LOADING INDICATOR (2 Detik)
+      await Future.delayed(const Duration(seconds: 2));
+
+      if (mounted) {
+        setState(() {
+          _isLoading = false;
+          _actionStatus = 'Berhasil terdaftar pada batch praktikum aktif!';
+        });
+
+        // 3. TAMPILKAN FEEDBACK SNACKBAR
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(
+            content: Text('Pendaftaran untuk $studentName berhasil disimpan!'),
+            backgroundColor: Colors.green,
+            duration: const Duration(seconds: 3),
+            action: SnackBarAction(
+              label: 'OK',
+              textColor: Colors.white,
+              onPressed: () {},
+            ),
+          ),
+        );
+      }
     }
   }
 
@@ -67,117 +94,57 @@ class _FeedbackFormPageState extends State<FeedbackFormPage> {
   Widget build(BuildContext context) {
     return Scaffold(
       appBar: AppBar(
-        title: const Text('Tahap 13 - Form & Validasi'),
+        title: const Text('Tahap 14 - Dialog & SnackBar'),
         backgroundColor: Theme.of(context).colorScheme.inversePrimary,
       ),
-      body: SingleChildScrollView(
-        padding: const EdgeInsets.all(20.0),
-        child: Form(
-          key: _formKey,
+      body: Center(
+        child: Padding(
+          padding: const EdgeInsets.all(24.0),
           child: Column(
-            crossAxisAlignment: CrossAxisAlignment.stretch,
+            mainAxisAlignment: MainAxisAlignment.center,
             children: [
-              // Kartu Header Identitas
-              Container(
-                padding: const EdgeInsets.all(16),
-                decoration: BoxDecoration(
-                  color: Colors.indigo.shade50,
-                  borderRadius: BorderRadius.circular(12),
-                  border: Border.all(color: Colors.indigo.shade200),
-                ),
-                child: Column(
-                  children: [
-                    const Icon(Icons.rate_review, size: 48, color: Colors.indigo),
-                    const SizedBox(height: 8),
-                    Text(
-                      '$studentId - $studentName',
-                      style: const TextStyle(fontWeight: FontWeight.bold, fontSize: 16),
-                      textAlign: TextAlign.center,
-                    ),
-                    const Text('Form Evaluasi & Feedback Course'),
-                  ],
-                ),
-              ),
-              const SizedBox(height: 24),
-
-              // 1. Field Nama Mahasiswa (Default)
-              TextFormField(
-                controller: _nameController,
-                decoration: const InputDecoration(
-                  labelText: 'Nama Mahasiswa',
-                  border: OutlineInputBorder(),
-                  prefixIcon: Icon(Icons.person),
-                ),
-                validator: (value) {
-                  if (value == null || value.trim().isEmpty) {
-                    return 'Nama mahasiswa wajib diisi';
-                  }
-                  return null;
-                },
-              ),
-              const SizedBox(height: 16),
-
-              // 2. Field NIM Mahasiswa (Default)
-              TextFormField(
-                controller: _idController,
-                decoration: const InputDecoration(
-                  labelText: 'NIM Mahasiswa',
-                  border: OutlineInputBorder(),
-                  prefixIcon: Icon(Icons.badge),
-                ),
-                validator: (value) {
-                  if (value == null || value.trim().isEmpty) {
-                    return 'NIM wajib diisi';
-                  }
-                  return null;
-                },
-              ),
-              const SizedBox(height: 16),
-
-              // 3. Field Komentar Feedback (Wajib Minimal 5 Karakter)
-              TextFormField(
-                controller: _commentController,
-                maxLines: 3,
-                decoration: const InputDecoration(
-                  labelText: 'Komentar Feedback',
-                  hintText: 'Tuliskan minimal 5 karakter ulasan...',
-                  border: OutlineInputBorder(),
-                  alignLabelWithHint: true,
-                ),
-                validator: (value) {
-                  if (value == null || value.trim().isEmpty) {
-                    return 'Komentar wajib diisi';
-                  }
-                  if (value.trim().length < 5) {
-                    return 'Komentar minimal 5 karakter';
-                  }
-                  return null;
-                },
-              ),
-              const SizedBox(height: 24),
-
-              ElevatedButton.icon(
-                onPressed: _submitForm,
-                icon: const Icon(Icons.send),
-                label: const Text('Kirim Feedback'),
-                style: ElevatedButton.styleFrom(
-                  padding: const EdgeInsets.symmetric(vertical: 14),
-                ),
-              ),
-              const SizedBox(height: 20),
-
-              // Tampilan Hasil Submit
-              if (_submittedResult.isNotEmpty)
-                Container(
-                  padding: const EdgeInsets.all(12),
-                  decoration: BoxDecoration(
-                    color: Colors.green.shade50,
-                    borderRadius: BorderRadius.circular(8),
-                    border: Border.all(color: Colors.green),
+              // Kartu Identitas Mahasiswa
+              Card(
+                elevation: 3,
+                child: Padding(
+                  padding: const EdgeInsets.all(16.0),
+                  child: Column(
+                    children: [
+                      const Icon(Icons.notifications_active, size: 50, color: Colors.indigo),
+                      const SizedBox(height: 8),
+                      Text(
+                        '$studentId - $studentName',
+                        style: const TextStyle(fontWeight: FontWeight.bold, fontSize: 16),
+                        textAlign: TextAlign.center,
+                      ),
+                      const SizedBox(height: 6),
+                      Text(
+                        'Status: $_actionStatus',
+                        textAlign: TextAlign.center,
+                        style: const TextStyle(color: Colors.indigo),
+                      ),
+                    ],
                   ),
-                  child: Text(
-                    _submittedResult,
-                    style: TextStyle(color: Colors.green.shade900, fontWeight: FontWeight.w600),
+                ),
+              ),
+              const SizedBox(height: 32),
+
+              // Tampilan Tombol Aksi atau Indikator Loading
+              if (_isLoading)
+                const Column(
+                  children: [
+                    CircularProgressIndicator(),
+                    SizedBox(height: 12),
+                    Text('Menyimpan data ke server...'),
+                  ],
+                )
+              else
+                ElevatedButton.icon(
+                  onPressed: _handleConfirmAction,
+                  icon: const Icon(Icons.check_circle_outline),
+                  label: const Text('Daftar Kursus Sekarang'),
+                  style: ElevatedButton.styleFrom(
+                    padding: const EdgeInsets.symmetric(horizontal: 24, vertical: 14),
                   ),
                 ),
             ],
