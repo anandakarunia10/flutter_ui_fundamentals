@@ -14,25 +14,23 @@ class MyApp extends StatelessWidget {
   Widget build(BuildContext context) {
     return MaterialApp(
       debugShowCheckedModeBanner: false,
-      title: 'Tahap 10 - NavigationBar',
+      title: 'Tahap 11 - Adaptive Navigation',
       theme: ThemeData(useMaterial3: true, colorSchemeSeed: Colors.indigo),
-      home: const MainNavigationShell(),
+      home: const AdaptiveNavigationShell(),
     );
   }
 }
 
-class MainNavigationShell extends StatefulWidget {
-  const MainNavigationShell({super.key});
+class AdaptiveNavigationShell extends StatefulWidget {
+  const AdaptiveNavigationShell({super.key});
 
   @override
-  State<MainNavigationShell> createState() => _MainNavigationShellState();
+  State<AdaptiveNavigationShell> createState() => _AdaptiveNavigationShellState();
 }
 
-class _MainNavigationShellState extends State<MainNavigationShell> {
-  // State untuk melacak tab aktif
-  int _currentIndex = 0;
+class _AdaptiveNavigationShellState extends State<AdaptiveNavigationShell> {
+  int _selectedIndex = 0;
 
-  // Daftar halaman berdasarkan tab
   final List<Widget> _pages = const [
     HomeScreen(),
     CoursesScreen(),
@@ -41,39 +39,87 @@ class _MainNavigationShellState extends State<MainNavigationShell> {
 
   @override
   Widget build(BuildContext context) {
-    return Scaffold(
-      appBar: AppBar(
-        title: const Text('Course Explorer - Navigasi Utama'),
-        backgroundColor: Theme.of(context).colorScheme.inversePrimary,
-      ),
-      // Menampilkan halaman sesuai index yang dipilih
-      body: _pages[_currentIndex],
-      // Navigasi bawah Material 3
-      bottomNavigationBar: NavigationBar(
-        selectedIndex: _currentIndex,
-        onDestinationSelected: (int index) {
-          setState(() {
-            _currentIndex = index;
-          });
-        },
-        destinations: const [
-          NavigationDestination(
-            icon: Icon(Icons.home_outlined),
-            selectedIcon: Icon(Icons.home),
-            label: 'Home',
+    return LayoutBuilder(
+      builder: (context, constraints) {
+        // BREAKPOINT ADAPTIF: 840 px
+        final isExpanded = constraints.maxWidth >= 840;
+
+        // KASUS 1: LAYAR LEBAR (>= 840 px) -> MENGGUNAKAN NAVIGATIONRAIL
+        if (isExpanded) {
+          return Scaffold(
+            appBar: AppBar(
+              title: const Text('Course Explorer (Expanded Mode)'),
+              backgroundColor: Theme.of(context).colorScheme.inversePrimary,
+            ),
+            body: Row(
+              children: [
+                NavigationRail(
+                  selectedIndex: _selectedIndex,
+                  onDestinationSelected: (int index) {
+                    setState(() {
+                      _selectedIndex = index;
+                    });
+                  },
+                  labelType: NavigationRailLabelType.all,
+                  destinations: const [
+                    NavigationRailDestination(
+                      icon: Icon(Icons.home_outlined),
+                      selectedIcon: Icon(Icons.home),
+                      label: Text('Home'),
+                    ),
+                    NavigationRailDestination(
+                      icon: Icon(Icons.school_outlined),
+                      selectedIcon: Icon(Icons.school),
+                      label: Text('Courses'),
+                    ),
+                    NavigationRailDestination(
+                      icon: Icon(Icons.person_outline),
+                      selectedIcon: Icon(Icons.person),
+                      label: Text('Profile'),
+                    ),
+                  ],
+                ),
+                const VerticalDivider(thickness: 1, width: 1),
+                Expanded(child: _pages[_selectedIndex]),
+              ],
+            ),
+          );
+        }
+
+        // KASUS 2: LAYAR COMPACT/MEDIUM (< 840 px) -> MENGGUNAKAN NAVIGATIONBAR
+        return Scaffold(
+          appBar: AppBar(
+            title: const Text('Course Explorer (Compact Mode)'),
+            backgroundColor: Theme.of(context).colorScheme.inversePrimary,
           ),
-          NavigationDestination(
-            icon: Icon(Icons.school_outlined),
-            selectedIcon: Icon(Icons.school),
-            label: 'Courses',
+          body: _pages[_selectedIndex],
+          bottomNavigationBar: NavigationBar(
+            selectedIndex: _selectedIndex,
+            onDestinationSelected: (int index) {
+              setState(() {
+                _selectedIndex = index;
+              });
+            },
+            destinations: const [
+              NavigationDestination(
+                icon: Icon(Icons.home_outlined),
+                selectedIcon: Icon(Icons.home),
+                label: 'Home',
+              ),
+              NavigationDestination(
+                icon: Icon(Icons.school_outlined),
+                selectedIcon: Icon(Icons.school),
+                label: 'Courses',
+              ),
+              NavigationDestination(
+                icon: Icon(Icons.person_outline),
+                selectedIcon: Icon(Icons.person),
+                label: 'Profile',
+              ),
+            ],
           ),
-          NavigationDestination(
-            icon: Icon(Icons.person_outline),
-            selectedIcon: Icon(Icons.person),
-            label: 'Profile',
-          ),
-        ],
-      ),
+        );
+      },
     );
   }
 }
@@ -90,18 +136,24 @@ class HomeScreen extends StatelessWidget {
         child: Column(
           mainAxisAlignment: MainAxisAlignment.center,
           children: [
-            const Icon(Icons.dashboard_customize, size: 70, color: Colors.indigo),
+            const Icon(Icons.devices, size: 70, color: Colors.indigo),
             const SizedBox(height: 16),
             const Text(
-              'Selamat Datang di Course Explorer',
-              style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold),
+              'Navigasi Adaptif Otomatis',
+              style: TextStyle(fontSize: 20, fontWeight: FontWeight.bold),
               textAlign: TextAlign.center,
             ),
             const SizedBox(height: 8),
             Text(
-              'Aplikasi Mobile Praktikum 5\n$studentId - $studentName',
+              'Identitas: $studentId - $studentName',
+              style: const TextStyle(fontWeight: FontWeight.w600, fontSize: 15),
               textAlign: TextAlign.center,
-              style: const TextStyle(color: Colors.grey),
+            ),
+            const SizedBox(height: 12),
+            const Text(
+              'Lebar < 840 px : NavigationBar (Bawah)\nLebar >= 840 px : NavigationRail (Samping)',
+              textAlign: TextAlign.center,
+              style: TextStyle(color: Colors.grey),
             ),
           ],
         ),
@@ -116,74 +168,43 @@ class CoursesScreen extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    final List<String> subjects = [
-      'MOB01 - Dart Fundamentals',
-      'MOB02 - Flutter UI',
-      'MOB03 - State Management',
-      'MOB04 - Responsive Layout',
-      'MOB05 - Navigation & Routing',
-    ];
-
-    return ListView.builder(
+    return ListView(
       padding: const EdgeInsets.all(16),
-      itemCount: subjects.length,
-      itemBuilder: (context, index) {
-        return Card(
-          margin: const EdgeInsets.only(bottom: 12),
-          child: ListTile(
-            leading: CircleAvatar(child: Text('${index + 1}')),
-            title: Text(subjects[index]),
-            subtitle: const Text('Status: Aktif'),
-            trailing: const Icon(Icons.arrow_forward_ios, size: 16),
-          ),
-        );
-      },
+      children: const [
+        ListTile(
+          leading: Icon(Icons.book, color: Colors.indigo),
+          title: Text('MOB04 - Responsive Layout'),
+          subtitle: Text('Status: Active'),
+        ),
+        ListTile(
+          leading: Icon(Icons.navigation, color: Colors.indigo),
+          title: Text('MOB05 - Navigation & Rail'),
+          subtitle: Text('Status: Planned'),
+        ),
+      ],
     );
   }
 }
 
-// 3. PROFILE SCREEN (Identitas Lengkap)
+// 3. PROFILE SCREEN
 class ProfileScreen extends StatelessWidget {
   const ProfileScreen({super.key});
 
   @override
   Widget build(BuildContext context) {
     return Center(
-      child: Padding(
-        padding: const EdgeInsets.all(20.0),
-        child: Card(
-          elevation: 4,
-          shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(16)),
-          child: Padding(
-            padding: const EdgeInsets.all(24.0),
-            child: Column(
-              mainAxisSize: MainAxisSize.min,
-              children: [
-                const CircleAvatar(
-                  radius: 40,
-                  child: Icon(Icons.person, size: 45),
-                ),
-                const SizedBox(height: 16),
-                Text(
-                  studentName,
-                  style: const TextStyle(fontSize: 18, fontWeight: FontWeight.bold),
-                ),
-                const SizedBox(height: 4),
-                Text(
-                  'NIM: $studentId',
-                  style: const TextStyle(fontSize: 14, color: Colors.indigo),
-                ),
-                const Divider(height: 28),
-                const Row(
-                  mainAxisAlignment: MainAxisAlignment.center,
-                  children: [
-                    Icon(Icons.school, size: 18, color: Colors.grey),
-                    SizedBox(width: 8),
-                    Text('Teknologi Rekayasa Perangkat Lunak'),
-                  ],
-                ),
-              ],
-            ),
+      child: Card(
+        margin: const EdgeInsets.all(20),
+        child: Padding(
+          padding: const EdgeInsets.all(24),
+          child: Column(
+            mainAxisSize: MainAxisSize.min,
+            children: [
+              const CircleAvatar(radius: 36, child: Icon(Icons.person, size: 40)),
+              const SizedBox(height: 16),
+              Text(studentName, style: const TextStyle(fontWeight: FontWeight.bold, fontSize: 18)),
+              Text('NIM: $studentId', style: const TextStyle(color: Colors.indigo)),
+            ],
           ),
         ),
       ),
