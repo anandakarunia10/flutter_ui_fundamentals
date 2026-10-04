@@ -14,162 +14,174 @@ class MyApp extends StatelessWidget {
   Widget build(BuildContext context) {
     return MaterialApp(
       debugShowCheckedModeBanner: false,
-      title: 'Tahap 12 - User Interaction',
+      title: 'Tahap 13 - Form & Validation',
       theme: ThemeData(useMaterial3: true, colorSchemeSeed: Colors.indigo),
-      home: const InteractionDemoPage(),
+      home: const FeedbackFormPage(),
     );
   }
 }
 
-class InteractionDemoPage extends StatefulWidget {
-  const InteractionDemoPage({super.key});
+class FeedbackFormPage extends StatefulWidget {
+  const FeedbackFormPage({super.key});
 
   @override
-  State<InteractionDemoPage> createState() => _InteractionDemoPageState();
+  State<FeedbackFormPage> createState() => _FeedbackFormPageState();
 }
 
-class _InteractionDemoPageState extends State<InteractionDemoPage> {
-  // State interaksi
-  bool _isFavorite = false;
-  int _tapCount = 0;
-  String _gestureFeedback = 'Belum ada interaksi gesture.';
+class _FeedbackFormPageState extends State<FeedbackFormPage> {
+  // GlobalKey untuk mengontrol state dan validasi form
+  final _formKey = GlobalKey<FormState>();
+
+  // Controller form dengan nilai default identitas
+  final TextEditingController _nameController = TextEditingController(text: studentName);
+  final TextEditingController _idController = TextEditingController(text: studentId);
+  final TextEditingController _commentController = TextEditingController();
+
+  String _submittedResult = '';
+
+  @override
+  void dispose() {
+    _nameController.dispose();
+    _idController.dispose();
+    _commentController.dispose();
+    super.dispose();
+  }
+
+  void _submitForm() {
+    // Memeriksa apakah seluruh validator mengembalikan null (lolos validasi)
+    if (_formKey.currentState!.validate()) {
+      setState(() {
+        _submittedResult =
+            'Terkirim: ${_commentController.text} (Oleh: ${_nameController.text} - ${_idController.text})';
+      });
+      ScaffoldMessenger.of(context).showSnackBar(
+        const SnackBar(
+          content: Text('Formulir berhasil divalidasi dan disimpan!'),
+          backgroundColor: Colors.green,
+        ),
+      );
+    }
+  }
 
   @override
   Widget build(BuildContext context) {
     return Scaffold(
       appBar: AppBar(
-        title: const Text('Tahap 12 - User Interaction'),
+        title: const Text('Tahap 13 - Form & Validasi'),
         backgroundColor: Theme.of(context).colorScheme.inversePrimary,
       ),
       body: SingleChildScrollView(
         padding: const EdgeInsets.all(20.0),
-        child: Column(
-          crossAxisAlignment: CrossAxisAlignment.stretch,
-          children: [
-            // Header Identitas Mahasiswa
-            Container(
-              padding: const EdgeInsets.all(16),
-              decoration: BoxDecoration(
-                color: Colors.indigo.shade50,
-                borderRadius: BorderRadius.circular(12),
-                border: Border.all(color: Colors.indigo.shade200),
-              ),
-              child: Column(
-                children: [
-                  const Icon(Icons.touch_app, size: 48, color: Colors.indigo),
-                  const SizedBox(height: 8),
-                  Text(
-                    '$studentId - $studentName',
-                    style: const TextStyle(fontWeight: FontWeight.bold, fontSize: 16),
-                    textAlign: TextAlign.center,
-                  ),
-                  const SizedBox(height: 4),
-                  const Text('Uji Coba: InkWell, Button, & GestureDetector'),
-                ],
-              ),
-            ),
-            const SizedBox(height: 24),
-
-            // KARTU INTERAKTIF DENGAN INKWELL DAN GESTUREDETECTOR
-            Material(
-              color: Colors.white,
-              elevation: 3,
-              borderRadius: BorderRadius.circular(16),
-              child: InkWell(
-                borderRadius: BorderRadius.circular(16),
-                splashColor: Colors.indigo.shade100,
-                // Aksi Tap Biasa pada InkWell
-                onTap: () {
-                  setState(() {
-                    _tapCount++;
-                    _gestureFeedback = 'Kartu diketuk (Tap ke-$_tapCount) via InkWell';
-                  });
-                },
-                // Aksi Long Press (Tekan Lama)
-                onLongPress: () {
-                  setState(() {
-                    _gestureFeedback = 'Long Press terdeteksi! Detail cepat ditampilkan.';
-                  });
-                },
-                child: Padding(
-                  padding: const EdgeInsets.all(20.0),
-                  child: Column(
-                    crossAxisAlignment: CrossAxisAlignment.start,
-                    children: [
-                      Row(
-                        mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                        children: [
-                          const CircleAvatar(
-                            backgroundColor: Colors.indigo,
-                            foregroundColor: Colors.white,
-                            child: Text('04'),
-                          ),
-                          // Tombol Favorite Interaktif
-                          IconButton(
-                            icon: Icon(
-                              _isFavorite ? Icons.favorite : Icons.favorite_border,
-                              color: _isFavorite ? Colors.red : Colors.grey,
-                              size: 28,
-                            ),
-                            tooltip: 'Tandai Favorit',
-                            onPressed: () {
-                              setState(() {
-                                _isFavorite = !_isFavorite;
-                                _gestureFeedback = _isFavorite
-                                    ? 'Ditambahkan ke Favorit via IconButton'
-                                    : 'Dihapus dari Favorit';
-                              });
-                            },
-                          ),
-                        ],
-                      ),
-                      const SizedBox(height: 12),
-                      const Text(
-                        'MOB04 - Responsive Layout & Interaction',
-                        style: TextStyle(fontSize: 16, fontWeight: FontWeight.bold),
-                      ),
-                      const SizedBox(height: 6),
-                      Text(
-                        'Status Favorite: ${_isFavorite ? "FAVORIT SAYA" : "Bukan Favorit"}',
-                        style: TextStyle(
-                          color: _isFavorite ? Colors.red.shade700 : Colors.grey.shade700,
-                          fontWeight: FontWeight.w600,
-                        ),
-                      ),
-                      const Divider(height: 24),
-                      const Text(
-                        'Tips: Tap kartu untuk ripple effect, atau tahan lama (Long Press).',
-                        style: TextStyle(fontSize: 12, color: Colors.grey),
-                      ),
-                    ],
-                  ),
+        child: Form(
+          key: _formKey,
+          child: Column(
+            crossAxisAlignment: CrossAxisAlignment.stretch,
+            children: [
+              // Kartu Header Identitas
+              Container(
+                padding: const EdgeInsets.all(16),
+                decoration: BoxDecoration(
+                  color: Colors.indigo.shade50,
+                  borderRadius: BorderRadius.circular(12),
+                  border: Border.all(color: Colors.indigo.shade200),
+                ),
+                child: Column(
+                  children: [
+                    const Icon(Icons.rate_review, size: 48, color: Colors.indigo),
+                    const SizedBox(height: 8),
+                    Text(
+                      '$studentId - $studentName',
+                      style: const TextStyle(fontWeight: FontWeight.bold, fontSize: 16),
+                      textAlign: TextAlign.center,
+                    ),
+                    const Text('Form Evaluasi & Feedback Course'),
+                  ],
                 ),
               ),
-            ),
-            const SizedBox(height: 20),
+              const SizedBox(height: 24),
 
-            // AREA INDIKATOR STATUS INTERAKSI
-            Container(
-              padding: const EdgeInsets.all(14),
-              decoration: BoxDecoration(
-                color: Colors.grey.shade100,
-                borderRadius: BorderRadius.circular(10),
-                border: Border.all(color: Colors.grey.shade300),
+              // 1. Field Nama Mahasiswa (Default)
+              TextFormField(
+                controller: _nameController,
+                decoration: const InputDecoration(
+                  labelText: 'Nama Mahasiswa',
+                  border: OutlineInputBorder(),
+                  prefixIcon: Icon(Icons.person),
+                ),
+                validator: (value) {
+                  if (value == null || value.trim().isEmpty) {
+                    return 'Nama mahasiswa wajib diisi';
+                  }
+                  return null;
+                },
               ),
-              child: Row(
-                children: [
-                  const Icon(Icons.info_outline, color: Colors.indigo),
-                  const SizedBox(width: 10),
-                  Expanded(
-                    child: Text(
-                      _gestureFeedback,
-                      style: const TextStyle(fontWeight: FontWeight.w500),
-                    ),
+              const SizedBox(height: 16),
+
+              // 2. Field NIM Mahasiswa (Default)
+              TextFormField(
+                controller: _idController,
+                decoration: const InputDecoration(
+                  labelText: 'NIM Mahasiswa',
+                  border: OutlineInputBorder(),
+                  prefixIcon: Icon(Icons.badge),
+                ),
+                validator: (value) {
+                  if (value == null || value.trim().isEmpty) {
+                    return 'NIM wajib diisi';
+                  }
+                  return null;
+                },
+              ),
+              const SizedBox(height: 16),
+
+              // 3. Field Komentar Feedback (Wajib Minimal 5 Karakter)
+              TextFormField(
+                controller: _commentController,
+                maxLines: 3,
+                decoration: const InputDecoration(
+                  labelText: 'Komentar Feedback',
+                  hintText: 'Tuliskan minimal 5 karakter ulasan...',
+                  border: OutlineInputBorder(),
+                  alignLabelWithHint: true,
+                ),
+                validator: (value) {
+                  if (value == null || value.trim().isEmpty) {
+                    return 'Komentar wajib diisi';
+                  }
+                  if (value.trim().length < 5) {
+                    return 'Komentar minimal 5 karakter';
+                  }
+                  return null;
+                },
+              ),
+              const SizedBox(height: 24),
+
+              ElevatedButton.icon(
+                onPressed: _submitForm,
+                icon: const Icon(Icons.send),
+                label: const Text('Kirim Feedback'),
+                style: ElevatedButton.styleFrom(
+                  padding: const EdgeInsets.symmetric(vertical: 14),
+                ),
+              ),
+              const SizedBox(height: 20),
+
+              // Tampilan Hasil Submit
+              if (_submittedResult.isNotEmpty)
+                Container(
+                  padding: const EdgeInsets.all(12),
+                  decoration: BoxDecoration(
+                    color: Colors.green.shade50,
+                    borderRadius: BorderRadius.circular(8),
+                    border: Border.all(color: Colors.green),
                   ),
-                ],
-              ),
-            ),
-          ],
+                  child: Text(
+                    _submittedResult,
+                    style: TextStyle(color: Colors.green.shade900, fontWeight: FontWeight.w600),
+                  ),
+                ),
+            ],
+          ),
         ),
       ),
     );
