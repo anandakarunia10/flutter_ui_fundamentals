@@ -14,187 +14,120 @@ class CourseExplorerApp extends StatelessWidget {
   Widget build(BuildContext context) {
     return MaterialApp(
       debugShowCheckedModeBanner: false,
-      title: 'Tahap 3 - Lifting State Up',
+      title: 'Tahap 4 - ValueNotifier',
       theme: ThemeData(
         useMaterial3: true,
         colorSchemeSeed: Colors.blue,
       ),
-      home: const LiftingStateUpPage(),
+      home: const ValueNotifierDemoPage(),
     );
   }
 }
 
-class LiftingStateUpPage extends StatefulWidget {
-  const LiftingStateUpPage({super.key});
+class ValueNotifierDemoPage extends StatefulWidget {
+  const ValueNotifierDemoPage({super.key});
 
   @override
-  State<LiftingStateUpPage> createState() => _LiftingStateUpPageState();
+  State<ValueNotifierDemoPage> createState() => _ValueNotifierDemoPageState();
 }
 
-class _LiftingStateUpPageState extends State<LiftingStateUpPage> {
-  final Set<String> _favoriteCourses = {};
+class _ValueNotifierDemoPageState extends State<ValueNotifierDemoPage> {
+  final ValueNotifier<int> _favoriteCount = ValueNotifier<int>(0);
 
-  void _toggleFavorite(String code) {
-    setState(() {
-      if (_favoriteCourses.contains(code)) {
-        _favoriteCourses.remove(code);
-      } else {
-        _favoriteCourses.add(code);
-      }
-    });
+  @override
+  void dispose() {
+    _favoriteCount.dispose();
+    super.dispose();
   }
 
   @override
   Widget build(BuildContext context) {
     return Scaffold(
       appBar: AppBar(
-        title: const Text('Tahap 3 - Lifting State Up'),
+        title: const Text('Tahap 4 - ValueNotifier'),
         backgroundColor: Theme.of(context).colorScheme.inversePrimary,
       ),
       body: SingleChildScrollView(
         padding: const EdgeInsets.all(16.0),
         child: Column(
+          crossAxisAlignment: CrossAxisAlignment.stretch,
           children: [
-            HeaderSummaryCard(
-              studentName: studentName,
-              studentId: studentId,
-              favoriteCount: _favoriteCourses.length,
-            ),
-            const SizedBox(height: 16),
-            FavoritesOverviewCard(
-              favoriteCodes: _favoriteCourses.toList(),
-            ),
-            const SizedBox(height: 16),
-            CourseCard(
-              code: 'MOB01',
-              title: 'Dart Fundamentals',
-              isFavorite: _favoriteCourses.contains('MOB01'),
-              onFavoriteChanged: () => _toggleFavorite('MOB01'),
-            ),
-            CourseCard(
-              code: 'MOB02',
-              title: 'Flutter UI Dasar',
-              isFavorite: _favoriteCourses.contains('MOB02'),
-              onFavoriteChanged: () => _toggleFavorite('MOB02'),
-            ),
-            CourseCard(
-              code: 'MOB03',
-              title: 'State Management',
-              isFavorite: _favoriteCourses.contains('MOB03'),
-              onFavoriteChanged: () => _toggleFavorite('MOB03'),
-            ),
-          ],
-        ),
-      ),
-    );
-  }
-}
-
-class HeaderSummaryCard extends StatelessWidget {
-  final String studentName;
-  final String studentId;
-  final int favoriteCount;
-
-  const HeaderSummaryCard({
-    super.key,
-    required this.studentName,
-    required this.studentId,
-    required this.favoriteCount,
-  });
-
-  @override
-  Widget build(BuildContext context) {
-    return Card(
-      color: Colors.blue.shade50,
-      child: Padding(
-        padding: const EdgeInsets.all(16.0),
-        child: Row(
-          children: [
-            const Icon(Icons.person, size: 40, color: Colors.blue),
-            const SizedBox(width: 12),
-            Expanded(
-              child: Column(
-                crossAxisAlignment: CrossAxisAlignment.start,
-                children: [
-                  Text(
-                    studentName,
-                    style: const TextStyle(fontWeight: FontWeight.bold, fontSize: 16),
-                  ),
-                  Text('NIM: $studentId'),
-                ],
+            Card(
+              color: Colors.blue.shade50,
+              child: Padding(
+                padding: const EdgeInsets.all(16.0),
+                child: Row(
+                  children: [
+                    const Icon(Icons.person, size: 40, color: Colors.blue),
+                    const SizedBox(width: 12),
+                    Expanded(
+                      child: Column(
+                        crossAxisAlignment: CrossAxisAlignment.start,
+                        children: const [
+                          Text(
+                            studentName,
+                            style: TextStyle(fontWeight: FontWeight.bold, fontSize: 16),
+                          ),
+                          Text('NIM: $studentId'),
+                        ],
+                      ),
+                    ),
+                    ValueListenableBuilder<int>(
+                      valueListenable: _favoriteCount,
+                      builder: (context, count, child) {
+                        return Chip(
+                          avatar: const Icon(Icons.favorite, color: Colors.red, size: 18),
+                          label: Text('$count Favorit'),
+                        );
+                      },
+                    ),
+                  ],
+                ),
               ),
             ),
-            Chip(
-              avatar: const Icon(Icons.favorite, color: Colors.red, size: 18),
-              label: Text('$favoriteCount Favorit'),
-            ),
-          ],
-        ),
-      ),
-    );
-  }
-}
-
-class FavoritesOverviewCard extends StatelessWidget {
-  final List<String> favoriteCodes;
-
-  const FavoritesOverviewCard({
-    super.key,
-    required this.favoriteCodes,
-  });
-
-  @override
-  Widget build(BuildContext context) {
-    return Card(
-      color: Colors.amber.shade50,
-      child: Padding(
-        padding: const EdgeInsets.all(16.0),
-        child: Row(
-          children: [
-            const Icon(Icons.star, color: Colors.amber),
-            const SizedBox(width: 12),
-            Expanded(
-              child: Text(
-                favoriteCodes.isEmpty
-                    ? 'Belum ada kursus yang difavoritkan'
-                    : 'Favorit Aktif: ${favoriteCodes.join(", ")}',
-                style: const TextStyle(fontWeight: FontWeight.w600),
+            const SizedBox(height: 20),
+            Card(
+              child: Padding(
+                padding: const EdgeInsets.all(16.0),
+                child: Column(
+                  children: [
+                    ValueListenableBuilder<int>(
+                      valueListenable: _favoriteCount,
+                      builder: (context, count, child) {
+                        return Text(
+                          'Jumlah Total Favorit: $count',
+                          style: const TextStyle(fontSize: 18, fontWeight: FontWeight.bold),
+                        );
+                      },
+                    ),
+                    const SizedBox(height: 16),
+                    Row(
+                      mainAxisAlignment: MainAxisAlignment.center,
+                      children: [
+                        ElevatedButton.icon(
+                          onPressed: () {
+                            if (_favoriteCount.value > 0) {
+                              _favoriteCount.value--;
+                            }
+                          },
+                          icon: const Icon(Icons.remove),
+                          label: const Text('Kurangi'),
+                        ),
+                        const SizedBox(width: 12),
+                        ElevatedButton.icon(
+                          onPressed: () {
+                            _favoriteCount.value++;
+                          },
+                          icon: const Icon(Icons.add),
+                          label: const Text('Tambah'),
+                        ),
+                      ],
+                    ),
+                  ],
+                ),
               ),
             ),
           ],
-        ),
-      ),
-    );
-  }
-}
-
-class CourseCard extends StatelessWidget {
-  final String code;
-  final String title;
-  final bool isFavorite;
-  final VoidCallback onFavoriteChanged;
-
-  const CourseCard({
-    super.key,
-    required this.code,
-    required this.title,
-    required this.isFavorite,
-    required this.onFavoriteChanged,
-  });
-
-  @override
-  Widget build(BuildContext context) {
-    return Card(
-      margin: const EdgeInsets.only(bottom: 10),
-      child: ListTile(
-        title: Text(title, style: const TextStyle(fontWeight: FontWeight.bold)),
-        subtitle: Text(code),
-        trailing: IconButton(
-          icon: Icon(
-            isFavorite ? Icons.favorite : Icons.favorite_border,
-            color: isFavorite ? Colors.red : Colors.grey,
-          ),
-          onPressed: onFavoriteChanged,
         ),
       ),
     );
