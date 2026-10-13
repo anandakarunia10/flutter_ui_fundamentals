@@ -37,26 +37,26 @@ class CourseExplorerApp extends StatelessWidget {
   Widget build(BuildContext context) {
     return MaterialApp(
       debugShowCheckedModeBanner: false,
-      title: 'Tahap 6 - Provider Setup',
+      title: 'Tahap 7 - watch vs read vs Consumer',
       theme: ThemeData(
         useMaterial3: true,
         colorSchemeSeed: Colors.blue,
       ),
-      home: const ProviderDemoPage(),
+      home: const WatchReadConsumerDemoPage(),
     );
   }
 }
 
-class ProviderDemoPage extends StatelessWidget {
-  const ProviderDemoPage({super.key});
+class WatchReadConsumerDemoPage extends StatelessWidget {
+  const WatchReadConsumerDemoPage({super.key});
 
   @override
   Widget build(BuildContext context) {
-    final courseProvider = Provider.of<CourseProvider>(context);
+    final favoriteCount = context.watch<CourseProvider>().favorites.length;
 
     return Scaffold(
       appBar: AppBar(
-        title: const Text('Tahap 6 - Provider Setup'),
+        title: const Text('Tahap 7 - watch vs read vs Consumer'),
         backgroundColor: Theme.of(context).colorScheme.inversePrimary,
       ),
       body: SingleChildScrollView(
@@ -86,53 +86,73 @@ class ProviderDemoPage extends StatelessWidget {
                     ),
                     Chip(
                       avatar: const Icon(Icons.favorite, color: Colors.red, size: 18),
-                      label: Text('${courseProvider.favorites.length} Favorit'),
+                      label: Text('$favoriteCount Favorit'),
                     ),
                   ],
                 ),
               ),
             ),
             const SizedBox(height: 20),
-            Card(
-              child: ListTile(
-                title: const Text('MOB01 - Dart Fundamentals', style: TextStyle(fontWeight: FontWeight.bold)),
-                subtitle: const Text('MOB01'),
-                trailing: IconButton(
-                  icon: Icon(
-                    courseProvider.isFavorite('MOB01') ? Icons.favorite : Icons.favorite_border,
-                    color: courseProvider.isFavorite('MOB01') ? Colors.red : Colors.grey,
+            Consumer<CourseProvider>(
+              builder: (context, provider, child) {
+                return Card(
+                  color: Colors.orange.shade50,
+                  child: Padding(
+                    padding: const EdgeInsets.all(16.0),
+                    child: Row(
+                      children: [
+                        const Icon(Icons.star, color: Colors.orange),
+                        const SizedBox(width: 12),
+                        Expanded(
+                          child: Text(
+                            'Consumer Rebuild Terisolasi: ${provider.favorites.length} kursus dipilih',
+                            style: const TextStyle(fontWeight: FontWeight.bold),
+                          ),
+                        ),
+                      ],
+                    ),
                   ),
-                  onPressed: () => courseProvider.toggleFavorite('MOB01'),
-                ),
-              ),
+                );
+              },
             ),
-            Card(
-              child: ListTile(
-                title: const Text('MOB02 - Flutter UI Dasar', style: TextStyle(fontWeight: FontWeight.bold)),
-                subtitle: const Text('MOB02'),
-                trailing: IconButton(
-                  icon: Icon(
-                    courseProvider.isFavorite('MOB02') ? Icons.favorite : Icons.favorite_border,
-                    color: courseProvider.isFavorite('MOB02') ? Colors.red : Colors.grey,
-                  ),
-                  onPressed: () => courseProvider.toggleFavorite('MOB02'),
-                ),
-              ),
-            ),
-            Card(
-              child: ListTile(
-                title: const Text('MOB03 - State Management', style: TextStyle(fontWeight: FontWeight.bold)),
-                subtitle: const Text('MOB03'),
-                trailing: IconButton(
-                  icon: Icon(
-                    courseProvider.isFavorite('MOB03') ? Icons.favorite : Icons.favorite_border,
-                    color: courseProvider.isFavorite('MOB03') ? Colors.red : Colors.grey,
-                  ),
-                  onPressed: () => courseProvider.toggleFavorite('MOB03'),
-                ),
-              ),
-            ),
+            const SizedBox(height: 16),
+            const CourseItemTile(code: 'MOB01', title: 'Dart Fundamentals'),
+            const CourseItemTile(code: 'MOB02', title: 'Flutter UI Dasar'),
+            const CourseItemTile(code: 'MOB03', title: 'State Management'),
           ],
+        ),
+      ),
+    );
+  }
+}
+
+class CourseItemTile extends StatelessWidget {
+  final String code;
+  final String title;
+
+  const CourseItemTile({
+    super.key,
+    required this.code,
+    required this.title,
+  });
+
+  @override
+  Widget build(BuildContext context) {
+    final isFav = context.watch<CourseProvider>().isFavorite(code);
+
+    return Card(
+      margin: const EdgeInsets.only(bottom: 10),
+      child: ListTile(
+        title: Text(title, style: const TextStyle(fontWeight: FontWeight.bold)),
+        subtitle: Text(code),
+        trailing: IconButton(
+          icon: Icon(
+            isFav ? Icons.favorite : Icons.favorite_border,
+            color: isFav ? Colors.red : Colors.grey,
+          ),
+          onPressed: () {
+            context.read<CourseProvider>().toggleFavorite(code);
+          },
         ),
       ),
     );
