@@ -8,9 +8,11 @@ class CourseService {
     const String mockJsonData = '''
     {
       "courses": [
-        {"code": "MOB01", "title": "Dart Fundamentals", "credits": 3, "status": "done"},
-        {"code": "MOB02", "title": "Flutter UI Dasar", "credits": 4, "status": "done"},
-        {"code": "MOB03", "title": "State Management", "credits": 3, "status": "active"}
+        {"code": "MOB01", "title": "Git & GitHub", "credits": 2, "status": "done"},
+        {"code": "MOB02", "title": "Dart Fundamentals", "credits": 3, "status": "done"},
+        {"code": "MOB03", "title": "State Management", "credits": 3, "status": "active"},
+        {"code": "MOB04", "title": "Flutter UI Responsive", "credits": 3, "status": "done"},
+        {"code": "MOB05", "title": "Clean Architecture", "credits": 4, "status": "active"}
       ]
     }
     ''';
