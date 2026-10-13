@@ -1,3 +1,4 @@
+import 'dart:convert';
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 
@@ -27,41 +28,54 @@ class Course {
   }
 }
 
+// SERVICE / DATA SOURCE LAYER
+class CourseService {
+  Future<List<Course>> loadCourses() async {
+    // Simulasi pengambilan data JSON mentah
+    await Future.delayed(const Duration(milliseconds: 500));
+    
+    const String mockJsonData = '''
+    {
+      "courses": [
+        {"code": "MOB01", "title": "Dart Fundamentals", "credits": 3, "status": "done"},
+        {"code": "MOB02", "title": "Flutter UI Dasar", "credits": 4, "status": "done"},
+        {"code": "MOB03", "title": "State Management", "credits": 3, "status": "active"}
+      ]
+    }
+    ''';
+
+    final data = jsonDecode(mockJsonData) as Map<String, dynamic>;
+    final list = data['courses'] as List<dynamic>;
+    return list.map((e) => Course.fromJson(e as Map<String, dynamic>)).toList();
+  }
+}
+
 void main() {
   runApp(
     ChangeNotifierProvider(
-      create: (_) => CourseProvider(),
+      create: (_) => CourseProvider()..initData(),
       child: const CourseExplorerApp(),
     ),
   );
 }
 
 class CourseProvider extends ChangeNotifier {
-  final List<Course> _courses = [
-    Course.fromJson({
-      'code': 'MOB01',
-      'title': 'Dart Fundamentals',
-      'credits': 3,
-      'status': 'done',
-    }),
-    Course.fromJson({
-      'code': 'MOB02',
-      'title': 'Flutter UI Dasar',
-      'credits': 4,
-      'status': 'done',
-    }),
-    Course.fromJson({
-      'code': 'MOB03',
-      'title': 'State Management',
-      'credits': 3,
-      'status': 'active',
-    }),
-  ];
-
+  final CourseService _courseService = CourseService();
+  List<Course> _courses = [];
   final Set<String> _favorites = {};
+  bool _isLoading = true;
 
   List<Course> get courses => _courses;
   Set<String> get favorites => _favorites;
+  bool get isLoading => _isLoading;
+
+  Future<void> initData() async {
+    _isLoading = true;
+    notifyListeners();
+    _courses = await _courseService.loadCourses();
+    _isLoading = false;
+    notifyListeners();
+  }
 
   bool isFavorite(String code) => _favorites.contains(code);
 
@@ -82,18 +96,18 @@ class CourseExplorerApp extends StatelessWidget {
   Widget build(BuildContext context) {
     return MaterialApp(
       debugShowCheckedModeBanner: false,
-      title: 'Tahap 8 - Model Course',
+      title: 'Tahap 9 - Course Service',
       theme: ThemeData(
         useMaterial3: true,
         colorSchemeSeed: Colors.blue,
       ),
-      home: const ModelDemoPage(),
+      home: const ServiceDemoPage(),
     );
   }
 }
 
-class ModelDemoPage extends StatelessWidget {
-  const ModelDemoPage({super.key});
+class ServiceDemoPage extends StatelessWidget {
+  const ServiceDemoPage({super.key});
 
   @override
   Widget build(BuildContext context) {
@@ -101,7 +115,7 @@ class ModelDemoPage extends StatelessWidget {
 
     return Scaffold(
       appBar: AppBar(
-        title: const Text('Tahap 8 - Model Course'),
+        title: const Text('Tahap 9 - Course Service'),
         backgroundColor: Theme.of(context).colorScheme.inversePrimary,
       ),
       body: SingleChildScrollView(
@@ -138,45 +152,54 @@ class ModelDemoPage extends StatelessWidget {
               ),
             ),
             const SizedBox(height: 20),
-            const Text(
-              'Daftar Kursus (Parsed via Model Course):',
-              style: TextStyle(fontWeight: FontWeight.bold, fontSize: 16),
-            ),
-            const SizedBox(height: 10),
-            ...provider.courses.map((course) {
-              final isFav = provider.isFavorite(course.code);
-              return Card(
-                margin: const EdgeInsets.only(bottom: 10),
-                child: ListTile(
-                  title: Text(course.title, style: const TextStyle(fontWeight: FontWeight.bold)),
-                  subtitle: Text('${course.code} • ${course.credits} SKS'),
-                  trailing: Row(
-                    mainAxisSize: MainAxisSize.min,
-                    children: [
-                      Chip(
-                        label: Text(
-                          course.status,
-                          style: TextStyle(
-                            fontSize: 12,
-                            color: course.status == 'done' ? Colors.green.shade800 : Colors.blue.shade800,
-                          ),
-                        ),
-                        backgroundColor: course.status == 'done' ? Colors.green.shade50 : Colors.blue.shade50,
-                      ),
-                      IconButton(
-                        icon: Icon(
-                          isFav ? Icons.favorite : Icons.favorite_border,
-                          color: isFav ? Colors.red : Colors.grey,
-                        ),
-                        onPressed: () {
-                          context.read<CourseProvider>().toggleFavorite(course.code);
-                        },
-                      ),
-                    ],
-                  ),
+            if (provider.isLoading)
+              const Center(
+                child: Padding(
+                  padding: EdgeInsets.all(32.0),
+                  child: CircularProgressIndicator(),
                 ),
-              );
-            }),
+              )
+            else ...[
+              const Text(
+                'Daftar Kursus (Dimuat via CourseService):',
+                style: TextStyle(fontWeight: FontWeight.bold, fontSize: 16),
+              ),
+              const SizedBox(height: 10),
+              ...provider.courses.map((course) {
+                final isFav = provider.isFavorite(course.code);
+                return Card(
+                  margin: const EdgeInsets.only(bottom: 10),
+                  child: ListTile(
+                    title: Text(course.title, style: const TextStyle(fontWeight: FontWeight.bold)),
+                    subtitle: Text('${course.code} • ${course.credits} SKS'),
+                    trailing: Row(
+                      mainAxisSize: MainAxisSize.min,
+                      children: [
+                        Chip(
+                          label: Text(
+                            course.status,
+                            style: TextStyle(
+                              fontSize: 12,
+                              color: course.status == 'done' ? Colors.green.shade800 : Colors.blue.shade800,
+                            ),
+                          ),
+                          backgroundColor: course.status == 'done' ? Colors.green.shade50 : Colors.blue.shade50,
+                        ),
+                        IconButton(
+                          icon: Icon(
+                            isFav ? Icons.favorite : Icons.favorite_border,
+                            color: isFav ? Colors.red : Colors.grey,
+                          ),
+                          onPressed: () {
+                            context.read<CourseProvider>().toggleFavorite(course.code);
+                          },
+                        ),
+                      ],
+                    ),
+                  ),
+                );
+              }),
+            ],
           ],
         ),
       ),
