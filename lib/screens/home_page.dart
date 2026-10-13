@@ -3,6 +3,8 @@ import 'package:provider/provider.dart';
 import '../providers/course_provider.dart';
 import '../widgets/course_card.dart';
 import '../widgets/student_header_card.dart';
+import 'course_detail_page.dart';
+import 'favorites_page.dart';
 
 const String studentName = 'Gede Ananda Karunia Putra';
 const String studentId = '2455011010';
@@ -29,16 +31,26 @@ class _HomePageState extends State<HomePage> {
 
     return Scaffold(
       appBar: AppBar(
-        title: const Text('Tahap 12 - Refactor Folder Structure'),
+        title: const Text('Tahap 13 - Shared Favorites'),
         backgroundColor: Theme.of(context).colorScheme.inversePrimary,
         actions: [
+          IconButton(
+            icon: const Icon(Icons.favorite, color: Colors.red),
+            tooltip: 'Halaman Favorit',
+            onPressed: () {
+              Navigator.push(
+                context,
+                MaterialPageRoute(builder: (_) => const FavoritesPage()),
+              );
+            },
+          ),
           IconButton(
             icon: const Icon(Icons.refresh),
             tooltip: 'Muat Ulang',
             onPressed: () {
               context.read<CourseProvider>().loadCourses();
             },
-          )
+          ),
         ],
       ),
       body: SingleChildScrollView(
@@ -82,22 +94,47 @@ class _HomePageState extends State<HomePage> {
                 ),
               )
             else ...[
-              const Text(
-                'Daftar Kursus (Modular Folder Architecture):',
-                style: TextStyle(fontWeight: FontWeight.bold, fontSize: 16),
+              Row(
+                mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                children: [
+                  const Text(
+                    'Daftar Kursus:',
+                    style: TextStyle(fontWeight: FontWeight.bold, fontSize: 16),
+                  ),
+                  TextButton.icon(
+                    onPressed: () {
+                      Navigator.push(
+                        context,
+                        MaterialPageRoute(builder: (_) => const FavoritesPage()),
+                      );
+                    },
+                    icon: const Icon(Icons.star, size: 18),
+                    label: Text('Lihat Favorit (${provider.favorites.length})'),
+                  ),
+                ],
               ),
-              const SizedBox(height: 10),
+              const SizedBox(height: 8),
               ...provider.courses.map((course) {
                 final isFav = provider.isFavorite(course.code);
-                return CourseCard(
-                  code: course.code,
-                  title: course.title,
-                  credits: course.credits,
-                  status: course.status,
-                  isFavorite: isFav,
-                  onFavoriteToggle: () {
-                    context.read<CourseProvider>().toggleFavorite(course.code);
+                return InkWell(
+                  onTap: () {
+                    Navigator.push(
+                      context,
+                      MaterialPageRoute(
+                        builder: (_) => CourseDetailPage(course: course),
+                      ),
+                    );
                   },
+                  child: CourseCard(
+                    code: course.code,
+                    title: course.title,
+                    credits: course.credits,
+                    status: course.status,
+                    isFavorite: isFav,
+                    onFavoriteToggle: () {
+                      context.read<CourseProvider>().toggleFavorite(course.code);
+                    },
+                  ),
                 );
               }),
             ],

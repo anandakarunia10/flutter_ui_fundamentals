@@ -17,6 +17,10 @@ class CourseProvider extends ChangeNotifier {
   bool get isLoading => _isLoading;
   String? get error => _error;
 
+  // GETTER UNTUK MENGAMBIL DAFTAR KURSUS FAVORIT
+  List<Course> get favoriteCourses =>
+      _courses.where((course) => _favorites.contains(course.code)).toList();
+
   Future<void> loadCourses() async {
     _isLoading = true;
     _error = null;
