@@ -2,8 +2,14 @@ import 'dart:convert';
 import '../models/course.dart';
 
 class CourseService {
+  bool simulateError = false;
+
   Future<List<Course>> loadCourses() async {
     await Future.delayed(const Duration(milliseconds: 600));
+
+    if (simulateError) {
+      throw Exception('Sengaja dipicu: Gagal mengambil data dari server (Debug Mode).');
+    }
 
     const String mockJsonData = '''
     {
