@@ -29,11 +29,17 @@ class Course {
   }
 }
 
-// 2. SERVICE / DATA SOURCE LAYER
+// 2. SERVICE LAYER
 class CourseService {
+  bool shouldSimulateError = false;
+
   Future<List<Course>> loadCourses() async {
-    await Future.delayed(const Duration(milliseconds: 500));
-    
+    await Future.delayed(const Duration(milliseconds: 600));
+
+    if (shouldSimulateError) {
+      throw Exception('Gagal menghubungkan ke server data kursus.');
+    }
+
     const String mockJsonData = '''
     {
       "courses": [
@@ -50,7 +56,7 @@ class CourseService {
   }
 }
 
-// 3. REPOSITORY LAYER (ABSTRAKSI DATA)
+// 3. REPOSITORY LAYER
 class CourseRepository {
   final CourseService service;
 
@@ -61,7 +67,7 @@ class CourseRepository {
   }
 }
 
-// 4. PROVIDER LAYER
+// 4. PROVIDER LAYER (MANAJEMEN ASYNC STATE)
 class CourseProvider extends ChangeNotifier {
   final CourseRepository repository;
 
@@ -69,20 +75,23 @@ class CourseProvider extends ChangeNotifier {
 
   List<Course> _courses = [];
   final Set<String> _favorites = {};
-  bool _isLoading = true;
+  bool _isLoading = false;
+  String? _error;
 
   List<Course> get courses => _courses;
   Set<String> get favorites => _favorites;
   bool get isLoading => _isLoading;
+  String? get error => _error;
 
-  Future<void> initData() async {
+  Future<void> loadCourses() async {
     _isLoading = true;
+    _error = null;
     notifyListeners();
 
     try {
       _courses = await repository.getCourses();
     } catch (e) {
-      debugPrint('Error loading courses via Repository: $e');
+      _error = e.toString().replaceAll('Exception: ', '');
     } finally {
       _isLoading = false;
       notifyListeners();
@@ -120,29 +129,29 @@ class CourseExplorerApp extends StatelessWidget {
   Widget build(BuildContext context) {
     return MaterialApp(
       debugShowCheckedModeBanner: false,
-      title: 'Tahap 10 - Repository Pattern',
+      title: 'Tahap 11 - Async State',
       theme: ThemeData(
         useMaterial3: true,
         colorSchemeSeed: Colors.blue,
       ),
-      home: const RepositoryDemoPage(),
+      home: const AsyncStateDemoPage(),
     );
   }
 }
 
-class RepositoryDemoPage extends StatefulWidget {
-  const RepositoryDemoPage({super.key});
+class AsyncStateDemoPage extends StatefulWidget {
+  const AsyncStateDemoPage({super.key});
 
   @override
-  State<RepositoryDemoPage> createState() => _RepositoryDemoPageState();
+  State<AsyncStateDemoPage> createState() => _AsyncStateDemoPageState();
 }
 
-class _RepositoryDemoPageState extends State<RepositoryDemoPage> {
+class _AsyncStateDemoPageState extends State<AsyncStateDemoPage> {
   @override
   void initState() {
     super.initState();
     WidgetsBinding.instance.addPostFrameCallback((_) {
-      context.read<CourseProvider>().initData();
+      context.read<CourseProvider>().loadCourses();
     });
   }
 
@@ -152,8 +161,17 @@ class _RepositoryDemoPageState extends State<RepositoryDemoPage> {
 
     return Scaffold(
       appBar: AppBar(
-        title: const Text('Tahap 10 - Repository Pattern'),
+        title: const Text('Tahap 11 - Async State Provider'),
         backgroundColor: Theme.of(context).colorScheme.inversePrimary,
+        actions: [
+          IconButton(
+            icon: const Icon(Icons.refresh),
+            tooltip: 'Muat Ulang',
+            onPressed: () {
+              context.read<CourseProvider>().loadCourses();
+            },
+          )
+        ],
       ),
       body: SingleChildScrollView(
         padding: const EdgeInsets.all(16.0),
@@ -188,17 +206,59 @@ class _RepositoryDemoPageState extends State<RepositoryDemoPage> {
                 ),
               ),
             ),
-            const SizedBox(height: 20),
+            const SizedBox(height: 16),
+            // SIKLUS TAMPILAN KONDISI ASYNC STATE
             if (provider.isLoading)
-              const Center(
+              const Padding(
+                padding: EdgeInsets.all(40.0),
+                child: Center(
+                  child: Column(
+                    children: [
+                      CircularProgressIndicator(),
+                      SizedBox(height: 12),
+                      Text('Memuat data kursus...'),
+                    ],
+                  ),
+                ),
+              )
+            else if (provider.error != null)
+              Card(
+                color: Colors.red.shade50,
                 child: Padding(
-                  padding: EdgeInsets.all(32.0),
-                  child: CircularProgressIndicator(),
+                  padding: const EdgeInsets.all(20.0),
+                  child: Column(
+                    children: [
+                      const Icon(Icons.error_outline, color: Colors.red, size: 48),
+                      const SizedBox(height: 12),
+                      Text(
+                        'Gagal Memuat Data',
+                        style: TextStyle(
+                          fontWeight: FontWeight.bold,
+                          color: Colors.red.shade900,
+                          fontSize: 16,
+                        ),
+                      ),
+                      const SizedBox(height: 6),
+                      Text(
+                        provider.error!,
+                        textAlign: TextAlign.center,
+                        style: TextStyle(color: Colors.red.shade800),
+                      ),
+                      const SizedBox(height: 16),
+                      ElevatedButton.icon(
+                        onPressed: () {
+                          context.read<CourseProvider>().loadCourses();
+                        },
+                        icon: const Icon(Icons.refresh),
+                        label: const Text('Coba Lagi'),
+                      ),
+                    ],
+                  ),
                 ),
               )
             else ...[
               const Text(
-                'Daftar Kursus (Provider -> Repository -> Service):',
+                'Daftar Kursus (Kondisi Success):',
                 style: TextStyle(fontWeight: FontWeight.bold, fontSize: 16),
               ),
               const SizedBox(height: 10),
