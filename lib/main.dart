@@ -5,6 +5,7 @@ import 'package:provider/provider.dart';
 const String studentName = 'Gede Ananda Karunia Putra';
 const String studentId = '2455011010';
 
+// 1. MODEL LAYER
 class Course {
   final String code;
   final String title;
@@ -28,7 +29,7 @@ class Course {
   }
 }
 
-// SERVICE / DATA SOURCE LAYER
+// 2. SERVICE / DATA SOURCE LAYER
 class CourseService {
   Future<List<Course>> loadCourses() async {
     await Future.delayed(const Duration(milliseconds: 500));
@@ -49,8 +50,23 @@ class CourseService {
   }
 }
 
+// 3. REPOSITORY LAYER (ABSTRAKSI DATA)
+class CourseRepository {
+  final CourseService service;
+
+  CourseRepository(this.service);
+
+  Future<List<Course>> getCourses() {
+    return service.loadCourses();
+  }
+}
+
+// 4. PROVIDER LAYER
 class CourseProvider extends ChangeNotifier {
-  final CourseService _courseService = CourseService();
+  final CourseRepository repository;
+
+  CourseProvider(this.repository);
+
   List<Course> _courses = [];
   final Set<String> _favorites = {};
   bool _isLoading = true;
@@ -64,9 +80,9 @@ class CourseProvider extends ChangeNotifier {
     notifyListeners();
 
     try {
-      _courses = await _courseService.loadCourses();
+      _courses = await repository.getCourses();
     } catch (e) {
-      debugPrint('Error loading courses: $e');
+      debugPrint('Error loading courses via Repository: $e');
     } finally {
       _isLoading = false;
       notifyListeners();
@@ -86,9 +102,12 @@ class CourseProvider extends ChangeNotifier {
 }
 
 void main() {
+  final courseService = CourseService();
+  final courseRepository = CourseRepository(courseService);
+
   runApp(
     ChangeNotifierProvider(
-      create: (_) => CourseProvider(),
+      create: (_) => CourseProvider(courseRepository),
       child: const CourseExplorerApp(),
     ),
   );
@@ -101,28 +120,27 @@ class CourseExplorerApp extends StatelessWidget {
   Widget build(BuildContext context) {
     return MaterialApp(
       debugShowCheckedModeBanner: false,
-      title: 'Tahap 9 - Course Service',
+      title: 'Tahap 10 - Repository Pattern',
       theme: ThemeData(
         useMaterial3: true,
         colorSchemeSeed: Colors.blue,
       ),
-      home: const ServiceDemoPage(),
+      home: const RepositoryDemoPage(),
     );
   }
 }
 
-class ServiceDemoPage extends StatefulWidget {
-  const ServiceDemoPage({super.key});
+class RepositoryDemoPage extends StatefulWidget {
+  const RepositoryDemoPage({super.key});
 
   @override
-  State<ServiceDemoPage> createState() => _ServiceDemoPageState();
+  State<RepositoryDemoPage> createState() => _RepositoryDemoPageState();
 }
 
-class _ServiceDemoPageState extends State<ServiceDemoPage> {
+class _RepositoryDemoPageState extends State<RepositoryDemoPage> {
   @override
   void initState() {
     super.initState();
-    // Memanggil initData() secara aman tepat setelah frame pertama selesai di-render
     WidgetsBinding.instance.addPostFrameCallback((_) {
       context.read<CourseProvider>().initData();
     });
@@ -134,7 +152,7 @@ class _ServiceDemoPageState extends State<ServiceDemoPage> {
 
     return Scaffold(
       appBar: AppBar(
-        title: const Text('Tahap 9 - Course Service'),
+        title: const Text('Tahap 10 - Repository Pattern'),
         backgroundColor: Theme.of(context).colorScheme.inversePrimary,
       ),
       body: SingleChildScrollView(
@@ -180,7 +198,7 @@ class _ServiceDemoPageState extends State<ServiceDemoPage> {
               )
             else ...[
               const Text(
-                'Daftar Kursus (Dimuat via CourseService):',
+                'Daftar Kursus (Provider -> Repository -> Service):',
                 style: TextStyle(fontWeight: FontWeight.bold, fontSize: 16),
               ),
               const SizedBox(height: 10),
