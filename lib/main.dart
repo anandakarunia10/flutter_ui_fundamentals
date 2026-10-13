@@ -31,7 +31,6 @@ class Course {
 // SERVICE / DATA SOURCE LAYER
 class CourseService {
   Future<List<Course>> loadCourses() async {
-    // Simulasi pengambilan data JSON mentah
     await Future.delayed(const Duration(milliseconds: 500));
     
     const String mockJsonData = '''
@@ -50,15 +49,6 @@ class CourseService {
   }
 }
 
-void main() {
-  runApp(
-    ChangeNotifierProvider(
-      create: (_) => CourseProvider()..initData(),
-      child: const CourseExplorerApp(),
-    ),
-  );
-}
-
 class CourseProvider extends ChangeNotifier {
   final CourseService _courseService = CourseService();
   List<Course> _courses = [];
@@ -72,9 +62,15 @@ class CourseProvider extends ChangeNotifier {
   Future<void> initData() async {
     _isLoading = true;
     notifyListeners();
-    _courses = await _courseService.loadCourses();
-    _isLoading = false;
-    notifyListeners();
+
+    try {
+      _courses = await _courseService.loadCourses();
+    } catch (e) {
+      debugPrint('Error loading courses: $e');
+    } finally {
+      _isLoading = false;
+      notifyListeners();
+    }
   }
 
   bool isFavorite(String code) => _favorites.contains(code);
@@ -87,6 +83,15 @@ class CourseProvider extends ChangeNotifier {
     }
     notifyListeners();
   }
+}
+
+void main() {
+  runApp(
+    ChangeNotifierProvider(
+      create: (_) => CourseProvider(),
+      child: const CourseExplorerApp(),
+    ),
+  );
 }
 
 class CourseExplorerApp extends StatelessWidget {
@@ -106,8 +111,22 @@ class CourseExplorerApp extends StatelessWidget {
   }
 }
 
-class ServiceDemoPage extends StatelessWidget {
+class ServiceDemoPage extends StatefulWidget {
   const ServiceDemoPage({super.key});
+
+  @override
+  State<ServiceDemoPage> createState() => _ServiceDemoPageState();
+}
+
+class _ServiceDemoPageState extends State<ServiceDemoPage> {
+  @override
+  void initState() {
+    super.initState();
+    // Memanggil initData() secara aman tepat setelah frame pertama selesai di-render
+    WidgetsBinding.instance.addPostFrameCallback((_) {
+      context.read<CourseProvider>().initData();
+    });
+  }
 
   @override
   Widget build(BuildContext context) {
