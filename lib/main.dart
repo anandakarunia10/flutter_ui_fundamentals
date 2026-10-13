@@ -14,32 +14,32 @@ class CourseExplorerApp extends StatelessWidget {
   Widget build(BuildContext context) {
     return MaterialApp(
       debugShowCheckedModeBanner: false,
-      title: 'Tahap 2 - Keterbatasan setState',
+      title: 'Tahap 3 - Lifting State Up',
       theme: ThemeData(
         useMaterial3: true,
         colorSchemeSeed: Colors.blue,
       ),
-      home: const ParentStateOwnerPage(),
+      home: const LiftingStateUpPage(),
     );
   }
 }
 
-class ParentStateOwnerPage extends StatefulWidget {
-  const ParentStateOwnerPage({super.key});
+class LiftingStateUpPage extends StatefulWidget {
+  const LiftingStateUpPage({super.key});
 
   @override
-  State<ParentStateOwnerPage> createState() => _ParentStateOwnerPageState();
+  State<LiftingStateUpPage> createState() => _LiftingStateUpPageState();
 }
 
-class _ParentStateOwnerPageState extends State<ParentStateOwnerPage> {
-  final Set<String> _favoriteCourseCodes = {};
+class _LiftingStateUpPageState extends State<LiftingStateUpPage> {
+  final Set<String> _favoriteCourses = {};
 
   void _toggleFavorite(String code) {
     setState(() {
-      if (_favoriteCourseCodes.contains(code)) {
-        _favoriteCourseCodes.remove(code);
+      if (_favoriteCourses.contains(code)) {
+        _favoriteCourses.remove(code);
       } else {
-        _favoriteCourseCodes.add(code);
+        _favoriteCourses.add(code);
       }
     });
   }
@@ -48,22 +48,40 @@ class _ParentStateOwnerPageState extends State<ParentStateOwnerPage> {
   Widget build(BuildContext context) {
     return Scaffold(
       appBar: AppBar(
-        title: const Text('Tahap 2 - Keterbatasan setState'),
+        title: const Text('Tahap 3 - Lifting State Up'),
         backgroundColor: Theme.of(context).colorScheme.inversePrimary,
       ),
       body: SingleChildScrollView(
         padding: const EdgeInsets.all(16.0),
         child: Column(
           children: [
-            HeaderStudentCard(
+            HeaderSummaryCard(
               studentName: studentName,
               studentId: studentId,
-              favoriteCount: _favoriteCourseCodes.length,
+              favoriteCount: _favoriteCourses.length,
             ),
             const SizedBox(height: 16),
-            CourseListContainer(
-              favorites: _favoriteCourseCodes,
-              onToggleFavorite: _toggleFavorite,
+            FavoritesOverviewCard(
+              favoriteCodes: _favoriteCourses.toList(),
+            ),
+            const SizedBox(height: 16),
+            CourseCard(
+              code: 'MOB01',
+              title: 'Dart Fundamentals',
+              isFavorite: _favoriteCourses.contains('MOB01'),
+              onFavoriteChanged: () => _toggleFavorite('MOB01'),
+            ),
+            CourseCard(
+              code: 'MOB02',
+              title: 'Flutter UI Dasar',
+              isFavorite: _favoriteCourses.contains('MOB02'),
+              onFavoriteChanged: () => _toggleFavorite('MOB02'),
+            ),
+            CourseCard(
+              code: 'MOB03',
+              title: 'State Management',
+              isFavorite: _favoriteCourses.contains('MOB03'),
+              onFavoriteChanged: () => _toggleFavorite('MOB03'),
             ),
           ],
         ),
@@ -72,12 +90,12 @@ class _ParentStateOwnerPageState extends State<ParentStateOwnerPage> {
   }
 }
 
-class HeaderStudentCard extends StatelessWidget {
+class HeaderSummaryCard extends StatelessWidget {
   final String studentName;
   final String studentId;
   final int favoriteCount;
 
-  const HeaderStudentCard({
+  const HeaderSummaryCard({
     super.key,
     required this.studentName,
     required this.studentId,
@@ -117,49 +135,51 @@ class HeaderStudentCard extends StatelessWidget {
   }
 }
 
-class CourseListContainer extends StatelessWidget {
-  final Set<String> favorites;
-  final Function(String) onToggleFavorite;
+class FavoritesOverviewCard extends StatelessWidget {
+  final List<String> favoriteCodes;
 
-  const CourseListContainer({
+  const FavoritesOverviewCard({
     super.key,
-    required this.favorites,
-    required this.onToggleFavorite,
+    required this.favoriteCodes,
   });
 
   @override
   Widget build(BuildContext context) {
-    final List<Map<String, String>> courses = [
-      {'code': 'MOB01', 'title': 'Dart Fundamentals'},
-      {'code': 'MOB02', 'title': 'Flutter UI Dasar'},
-      {'code': 'MOB03', 'title': 'State Management'},
-    ];
-
-    return Column(
-      children: courses.map((course) {
-        return CourseCardItem(
-          code: course['code']!,
-          title: course['title']!,
-          isFavorite: favorites.contains(course['code']),
-          onToggleFavorite: onToggleFavorite,
-        );
-      }).toList(),
+    return Card(
+      color: Colors.amber.shade50,
+      child: Padding(
+        padding: const EdgeInsets.all(16.0),
+        child: Row(
+          children: [
+            const Icon(Icons.star, color: Colors.amber),
+            const SizedBox(width: 12),
+            Expanded(
+              child: Text(
+                favoriteCodes.isEmpty
+                    ? 'Belum ada kursus yang difavoritkan'
+                    : 'Favorit Aktif: ${favoriteCodes.join(", ")}',
+                style: const TextStyle(fontWeight: FontWeight.w600),
+              ),
+            ),
+          ],
+        ),
+      ),
     );
   }
 }
 
-class CourseCardItem extends StatelessWidget {
+class CourseCard extends StatelessWidget {
   final String code;
   final String title;
   final bool isFavorite;
-  final Function(String) onToggleFavorite;
+  final VoidCallback onFavoriteChanged;
 
-  const CourseCardItem({
+  const CourseCard({
     super.key,
     required this.code,
     required this.title,
     required this.isFavorite,
-    required this.onToggleFavorite,
+    required this.onFavoriteChanged,
   });
 
   @override
@@ -174,7 +194,7 @@ class CourseCardItem extends StatelessWidget {
             isFavorite ? Icons.favorite : Icons.favorite_border,
             color: isFavorite ? Colors.red : Colors.grey,
           ),
-          onPressed: () => onToggleFavorite(code),
+          onPressed: onFavoriteChanged,
         ),
       ),
     );
