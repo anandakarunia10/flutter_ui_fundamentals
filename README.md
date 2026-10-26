@@ -1,6 +1,6 @@
-# Course Explorer v2 - State Management & Architecture
+# Course Data Manager - Pertemuan 7
 
-Aplikasi Flutter Course Explorer v2 yang diimplementasikan dengan arsitektur modular, penerapan *Separation of Concerns*, dan *State Management* berbasis `Provider`.
+Aplikasi Course Data Manager yang mengintegrasikan Flutter UI dengan RESTful API, Backend Services, dan Database Supabase.
 
 ## Identitas Mahasiswa
 - **Nama**: Gede Ananda Karunia Putra
@@ -9,23 +9,30 @@ Aplikasi Flutter Course Explorer v2 yang diimplementasikan dengan arsitektur mod
 
 ---
 
-## Arsitektur & Tanggung Jawab Folder (`lib/`)
+## Dokumentasi REST API (Tahap 1)
 
-Aplikasi ini menerapkan aliran *Dependency Direction*:
-`UI Layer (Screens/Widgets)` → `Provider Layer` → `Repository Layer` → `Service Layer`
+### Pengujian endpoint
 
-Berikut adalah rincian tanggung jawab setiap direktori di dalam project:
+- **Endpoint yang berhasil diuji:** `https://jsonplaceholder.typicode.com/posts/1`
+- **HTTP Method:** `GET`
+- **Status Code:** `200 OK`
+- **Resource:** `posts`
+- **Format response:** JSON
 
-- `lib/models/`: Menyimpan class representasi data mentah (misal: `course.dart`) dan menangani parsing data `Course.fromJson()`.
-- `lib/services/`: Mengelola detail teknis pengambilan data mentah dari sumber data (`course_service.dart`), seperti membaca file JSON/API tanpa melibatkan elemen UI.
-- `lib/repositories/`: Menyediakan lapisan abstraksi data (`course_repository.dart`) yang menghubungkan Service dengan Provider, sehingga sumber data bisa diganti tanpa mengubah logika bisnis UI.
-- `lib/providers/`: Mengelola *application state*, logika bisnis, dan *async state* (`loading`, `success`, `error`) menggunakan `ChangeNotifier` (`course_provider.dart`).
-- `lib/screens/`: Menampilkan antarmuka halaman utama dan navigasi aplikasi (`home_page.dart`, `courses_list_page.dart`, `favorites_page.dart`, `main_screen.dart`).
-- `lib/widgets/`: Menyimpan komponen UI modular yang dapat digunakan kembali (*reusable widgets*), seperti `course_card.dart` dan `student_header_card.dart`.
+### Struktur Response Body JSON
 
----
+```json
+{
+  "userId": 1,
+  "id": 1,
+  "title": "sunt aut facere repellat provident occaecati excepturi optio reprehenderit",
+  "body": "quia et suscipit\nsuscipit recusandae consequuntur expedita et cum\nreprehenderit molestiae ut ut quas totam\nnostrum rerum est autem sunt rem eveniet architecto"
+}
+```
 
-## Fitur Utama
-- *Shared Favorites State* yang tersinkronisasi secara *real-time* di seluruh screen.
-- Penanganan *Async State* (`Loading`, `Success`, `Error Recovery`).
-- Navigasi responsif berbasis Bottom Navigation Bar & Tab View.
+### Identifikasi field JSON
+
+- `userId`: ID pengguna pemilik post.
+- `id`: ID post.
+- `title`: judul post.
+- `body`: isi post.
