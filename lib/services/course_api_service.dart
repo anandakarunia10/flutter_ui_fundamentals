@@ -7,8 +7,6 @@ class CourseApiService {
   CourseApiService(this.baseUrl);
 
   final String baseUrl;
-
-  // Untuk menguji tampilan error pada aplikasi
   bool simulateError = false;
 
   Future<List<Course>> getCourses() async {
@@ -18,31 +16,55 @@ class CourseApiService {
       );
     }
 
-    // Menggunakan /posts jika menggunakan jsonplaceholder agar tidak 404
     final String endpoint = baseUrl.contains('jsonplaceholder')
         ? '$baseUrl/posts'
         : '$baseUrl/courses';
 
     final response = await http.get(Uri.parse(endpoint));
 
-    debugPrint('HTTP Method: GET');
-    debugPrint('Endpoint: $endpoint');
-    debugPrint('Status Code: ${response.statusCode}');
-
     if (response.statusCode != 200) {
-      throw Exception(
-        'Gagal mengambil course: HTTP ${response.statusCode}',
-      );
+      throw Exception('Gagal mengambil course: HTTP ${response.statusCode}');
     }
 
     final List<dynamic> data = jsonDecode(response.body) as List<dynamic>;
 
-    debugPrint('Jumlah course: ${data.length}');
-
     return data
-        .map(
-          (item) => Course.fromJson(item as Map<String, dynamic>),
-        )
+        .map((item) => Course.fromJson(item as Map<String, dynamic>))
         .toList();
+  }
+
+  // Metode HTTP POST untuk membuat Course baru
+  Future<Course> createCourse(Course newCourse) async {
+    final String endpoint = baseUrl.contains('jsonplaceholder')
+        ? '$baseUrl/posts'
+        : '$baseUrl/courses';
+
+    final response = await http.post(
+      Uri.parse(endpoint),
+      headers: {'Content-Type': 'application/json; charset=UTF-8'},
+      body: jsonEncode(newCourse.toJson()),
+    );
+
+    debugPrint('HTTP Method: POST');
+    debugPrint('Status Code: ${response.statusCode}');
+    debugPrint('Response Body: ${response.body}');
+
+    if (response.statusCode == 201 || response.statusCode == 200) {
+      final Map<String, dynamic> data =
+          jsonDecode(response.body) as Map<String, dynamic>;
+      
+      // Jika server dummy tidak mengembalikan field lokal, pertahankan nilai input
+      return Course(
+        id: data['id'] as int? ?? DateTime.now().millisecondsSinceEpoch,
+        code: newCourse.code,
+        title: newCourse.title,
+        credits: newCourse.credits,
+        status: newCourse.status,
+      );
+    } else {
+      throw Exception(
+        'Gagal menambah course baru (Status: ${response.statusCode})',
+      );
+    }
   }
 }

@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 import '../providers/course_provider.dart';
+import 'add_course_dialog.dart';
 import 'home_page.dart';
 import 'courses_list_page.dart';
 import 'favorites_page.dart';
@@ -29,6 +30,14 @@ class _MainScreenState extends State<MainScreen> {
     });
   }
 
+  void _showAddCourseDialog() {
+    showModalBottomSheet(
+      context: context,
+      isScrollControlled: true,
+      builder: (_) => const AddCourseDialog(),
+    );
+  }
+
   @override
   Widget build(BuildContext context) {
     return Scaffold(
@@ -48,6 +57,11 @@ class _MainScreenState extends State<MainScreen> {
       body: IndexedStack(
         index: _selectedIndex,
         children: _pages,
+      ),
+      floatingActionButton: FloatingActionButton(
+        onPressed: _showAddCourseDialog,
+        tooltip: 'Tambah Course',
+        child: const Icon(Icons.add),
       ),
       bottomNavigationBar: BottomNavigationBar(
         currentIndex: _selectedIndex,

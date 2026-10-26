@@ -35,6 +35,25 @@ class CourseProvider extends ChangeNotifier {
     }
   }
 
+  // Fungsi membuat Course baru via HTTP POST
+  Future<bool> addCourse(Course course) async {
+    _isLoading = true;
+    _error = null;
+    notifyListeners();
+
+    try {
+      final createdCourse = await repository.createCourse(course);
+      _courses.insert(0, createdCourse); // Tambahkan ke baris paling atas
+      return true;
+    } catch (e) {
+      _error = e.toString().replaceAll('Exception: ', '');
+      return false;
+    } finally {
+      _isLoading = false;
+      notifyListeners();
+    }
+  }
+
   bool isFavorite(String code) => _favorites.contains(code);
 
   void toggleFavorite(String code) {
