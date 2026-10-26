@@ -1,4 +1,3 @@
-
 class Course {
   final int? id;
   final String code;
@@ -15,22 +14,21 @@ class Course {
   });
 
   factory Course.fromJson(Map<String, dynamic> json) {
+    final int itemCodeId = json['id'] as int? ?? 1;
     return Course(
       id: json['id'] as int?,
-      code: json['code'] as String,
-      title: json['title'] as String,
-      credits: json['credits'] as int,
-      status: (json['status'] as String?) ?? 'planned',
+      code: json['code'] as String? ?? 'MOB0$itemCodeId',
+      title: json['title'] as String? ?? 'Course $itemCodeId',
+      credits: (json['credits'] as num?)?.toInt() ?? ((itemCodeId % 3) + 2),
+      status: (json['status'] as String?) ?? (itemCodeId % 2 == 0 ? 'active' : 'planned'),
     );
   }
 
-  Map<String, dynamic> toJson() {
-    return {
-      if (id != null) 'id': id,
-      'code': code,
-      'title': title,
-      'credits': credits,
-      'status': status,
-    };
-  }
+  Map<String, dynamic> toJson() => {
+        if (id != null) 'id': id,
+        'code': code,
+        'title': title,
+        'credits': credits,
+        'status': status,
+      };
 }

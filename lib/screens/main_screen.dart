@@ -1,7 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 import '../providers/course_provider.dart';
-import '../services/course_service.dart';
 import 'home_page.dart';
 import 'courses_list_page.dart';
 import 'favorites_page.dart';
@@ -15,7 +14,6 @@ class MainScreen extends StatefulWidget {
 
 class _MainScreenState extends State<MainScreen> {
   int _selectedIndex = 0;
-  bool _isDebugErrorActive = false;
 
   final List<Widget> _pages = const [
     HomePage(),
@@ -35,23 +33,9 @@ class _MainScreenState extends State<MainScreen> {
   Widget build(BuildContext context) {
     return Scaffold(
       appBar: AppBar(
-        title: const Text('Course Explorer v2 - Debugging'),
+        title: const Text('Course Data Manager'),
         backgroundColor: Theme.of(context).colorScheme.inversePrimary,
         actions: [
-          IconButton(
-            icon: Icon(
-              _isDebugErrorActive ? Icons.bug_report : Icons.bug_report_outlined,
-              color: _isDebugErrorActive ? Colors.red : null,
-            ),
-            tooltip: 'Simulasi Error',
-            onPressed: () {
-              setState(() {
-                _isDebugErrorActive = !_isDebugErrorActive;
-                context.read<CourseProvider>().repository.service.simulateError = _isDebugErrorActive;
-              });
-              context.read<CourseProvider>().loadCourses();
-            },
-          ),
           IconButton(
             icon: const Icon(Icons.refresh),
             tooltip: 'Muat Ulang',
