@@ -2,6 +2,8 @@ import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 import '../providers/course_provider.dart';
 import '../widgets/course_card.dart';
+import '../widgets/error_view.dart';
+import '../main.dart'; // Mengambil studentName dan studentId
 
 class HomePage extends StatelessWidget {
   const HomePage({super.key});
@@ -9,101 +11,111 @@ class HomePage extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final provider = context.watch<CourseProvider>();
-    final courses = provider.courses;
-    final favCount = provider.favorites.length;
 
-    return SingleChildScrollView(
-      padding: const EdgeInsets.all(16.0),
-      child: Column(
-        crossAxisAlignment: CrossAxisAlignment.start,
-        children: [
-          Card(
-            color: Colors.blue.shade50,
-            child: const Padding(
-              padding: EdgeInsets.all(16.0),
-              child: Row(
-                children: [
-                  Icon(Icons.person, size: 40, color: Colors.blue),
-                  SizedBox(width: 12),
-                  Expanded(
-                    child: Column(
-                      crossAxisAlignment: CrossAxisAlignment.start,
-                      children: [
-                        Text(
-                          'Gede Ananda Karunia Putra',
-                          style: TextStyle(
-                              fontWeight: FontWeight.bold, fontSize: 16),
-                        ),
-                        Text('NIM: 2455011010'),
-                      ],
-                    ),
-                  ),
-                ],
-              ),
-            ),
+    return Scaffold(
+      appBar: AppBar(
+        title: const Text('Course Data Manager'),
+        actions: [
+          IconButton(
+            icon: const Icon(Icons.refresh),
+            onPressed: () => provider.loadCourses(),
           ),
-          const SizedBox(height: 16),
-          Row(
-            children: [
-              Expanded(
-                child: Card(
-                  child: Padding(
-                    padding: const EdgeInsets.all(16.0),
-                    child: Column(
-                      children: [
-                        const Text('Total Course',
-                            style: TextStyle(color: Colors.grey)),
-                        const SizedBox(height: 8),
-                        Text(
-                          '${courses.length}',
-                          style: const TextStyle(
-                              fontSize: 24, fontWeight: FontWeight.bold),
-                        ),
-                      ],
-                    ),
-                  ),
-                ),
-              ),
-              const SizedBox(width: 12),
-              Expanded(
-                child: Card(
-                  child: Padding(
-                    padding: const EdgeInsets.all(16.0),
-                    child: Column(
-                      children: [
-                        const Text('Favorit',
-                            style: TextStyle(color: Colors.grey)),
-                        const SizedBox(height: 8),
-                        Text(
-                          '$favCount',
-                          style: const TextStyle(
-                              fontSize: 24, fontWeight: FontWeight.bold),
-                        ),
-                      ],
-                    ),
-                  ),
-                ),
-              ),
-            ],
-          ),
-          const SizedBox(height: 20),
-          const Text(
-            'Ringkasan Course Terbaru',
-            style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold),
-          ),
-          const SizedBox(height: 8),
-          if (courses.isEmpty)
-            const Text('Belum ada data course.')
-          else
-            ...courses.take(3).map((course) {
-              return CourseCard(
-                course: course,
-                isFavorite: provider.isFavorite(course.code),
-                onFavoriteToggle: () => provider.toggleFavorite(course.code),
-              );
-            }),
         ],
       ),
+      body: SingleChildScrollView(
+        child: Column(
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: [
+            // Student Card Header
+            Card(
+              margin: const EdgeInsets.all(16),
+              elevation: 2,
+              color: Colors.blue.shade50,
+              shape: RoundedRectangleBorder(
+                borderRadius: BorderRadius.circular(12),
+              ),
+              child: Padding(
+                padding: const EdgeInsets.all(16),
+                child: Row(
+                  children: [
+                    CircleAvatar(
+                      radius: 24,
+                      backgroundColor: Colors.blue.shade200,
+                      child: const Icon(Icons.person, color: Colors.blue),
+                    ),
+                    const SizedBox(width: 16),
+                    Expanded(
+                      child: Column(
+                        crossAxisAlignment: CrossAxisAlignment.start,
+                        children: [
+                          const Text(
+                            studentName,
+                            style: TextStyle(
+                              fontWeight: FontWeight.bold,
+                              fontSize: 16,
+                            ),
+                          ),
+                          const SizedBox(height: 4),
+                          Text(
+                            'NIM: $studentId',
+                            style: const TextStyle(color: Colors.black54),
+                          ),
+                        ],
+                      ),
+                    ),
+                  ],
+                ),
+              ),
+            ),
+
+            const Padding(
+              padding: EdgeInsets.symmetric(horizontal: 16, vertical: 8),
+              child: Text(
+                'Ringkasan Course Terbaru',
+                style: TextStyle(
+                  fontSize: 18,
+                  fontWeight: FontWeight.bold,
+                ),
+              ),
+            ),
+
+            _buildRecentList(provider),
+          ],
+        ),
+      ),
+    );
+  }
+
+  Widget _buildRecentList(CourseProvider provider) {
+    if (provider.isLoading) {
+      return const Padding(
+        padding: EdgeInsets.all(32),
+        child: Center(child: CircularProgressIndicator()),
+      );
+    }
+
+    if (provider.error != null) {
+      return ErrorView(
+        message: provider.error!,
+        onRetry: provider.loadCourses,
+      );
+    }
+
+    if (provider.courses.isEmpty) {
+      return const Padding(
+        padding: EdgeInsets.all(32),
+        child: Center(child: Text('Data course belum tersedia.')),
+      );
+    }
+
+    return ListView.builder(
+      shrinkWrap: true,
+      physics: const NeverScrollableScrollPhysics(),
+      itemCount: provider.courses.length,
+      itemBuilder: (context, index) {
+        final course = provider.courses[index];
+        return CourseCard(course: course);
+      },
     );
   }
 }

@@ -11,60 +11,48 @@ class CoursesListPage extends StatelessWidget {
   Widget build(BuildContext context) {
     final provider = context.watch<CourseProvider>();
 
-    // 1. Loading State
+    return Scaffold(
+      appBar: AppBar(
+        title: const Text('Daftar Course'),
+        actions: [
+          IconButton(
+            icon: const Icon(Icons.refresh),
+            onPressed: () => provider.loadCourses(),
+          ),
+        ],
+      ),
+      body: _buildBody(provider),
+    );
+  }
+
+  Widget _buildBody(CourseProvider provider) {
     if (provider.isLoading) {
-      return const Center(
-        child: CircularProgressIndicator(),
-      );
+      return const Center(child: CircularProgressIndicator());
     }
 
-    // 2. Error State
     if (provider.error != null) {
       return ErrorView(
         message: provider.error!,
-        onRetry: () => provider.loadCourses(),
+        onRetry: provider.loadCourses,
       );
     }
 
-    // 3. Empty State
     if (provider.courses.isEmpty) {
-      return Center(
-        child: Column(
-          mainAxisAlignment: MainAxisAlignment.center,
-          children: [
-            const Icon(Icons.inbox, size: 60, color: Colors.grey),
-            const SizedBox(height: 12),
-            const Text(
-              'Data course belum tersedia.',
-              style: TextStyle(fontSize: 16, color: Colors.grey),
-            ),
-            const SizedBox(height: 12),
-            ElevatedButton(
-              onPressed: () => provider.loadCourses(),
-              child: const Text('Refresh Data'),
-            ),
-          ],
+      return const Center(
+        child: Text(
+          'Data course belum tersedia.',
+          style: TextStyle(fontSize: 16),
         ),
       );
     }
 
-    // 4. Success State
-    return RefreshIndicator(
-      onRefresh: () => provider.loadCourses(),
-      child: ListView.builder(
-        padding: const EdgeInsets.all(12),
-        itemCount: provider.courses.length,
-        itemBuilder: (context, index) {
-          final course = provider.courses[index];
-          final isFav = provider.isFavorite(course.code);
-
-          return CourseCard(
-            course: course,
-            isFavorite: isFav,
-            onFavoriteToggle: () => provider.toggleFavorite(course.code),
-          );
-        },
-      ),
+    return ListView.builder(
+      padding: const EdgeInsets.symmetric(vertical: 8),
+      itemCount: provider.courses.length,
+      itemBuilder: (context, index) {
+        final course = provider.courses[index];
+        return CourseCard(course: course);
+      },
     );
   }
 }
