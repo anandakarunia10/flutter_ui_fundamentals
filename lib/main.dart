@@ -12,12 +12,11 @@ const String studentId = '2455011010';
 const String apiBaseUrl = 'https://jsonplaceholder.typicode.com';
 
 void main() {
-  final courseApiService = CourseApiService(apiBaseUrl);
-  final courseRepository = CourseRepository(courseApiService);
+  final repository = CourseRepository(CourseApiService(apiBaseUrl));
 
   runApp(
     ChangeNotifierProvider(
-      create: (_) => CourseProvider(courseRepository)..loadCourses(),
+      create: (_) => CourseProvider(repository)..loadCourses(),
       child: const CourseExplorerApp(),
     ),
   );
