@@ -5,29 +5,27 @@ import 'package:supabase_flutter/supabase_flutter.dart';
 import 'providers/course_provider.dart';
 import 'repositories/course_repository.dart';
 import 'screens/main_screen.dart';
-import 'services/course_api_service.dart';
+import 'services/course_data_source.dart';
+import 'services/course_supabase_service.dart';
 
 const String studentName = 'Gede Ananda Karunia Putra';
 const String studentId = '2455011010';
 
-// Isikan URL Proyek & Anon Key Supabase kamu dari Dashboard Supabase
-const String supabaseUrl = 'https://bgvhjtvpypyvuqxxqxin.supabase.co';
-const String supabaseAnonKey = 'sb_publishable_ccOVXYMDl1S_KPHaZCqR5g_8iOcZL7A';
-
-const String apiBaseUrl = 'https://jsonplaceholder.typicode.com';
+// Masukkan URL & Publishable Key Supabase kamu
+const String supabaseUrl = 'https://YOUR_SUPABASE_PROJECT_ID.supabase.co';
+const String supabasePublishableKey = 'YOUR_SUPABASE_ANON_OR_PUBLISHABLE_KEY';
 
 Future<void> main() async {
-  // Wajib dipanggil sebelum inisialisasi async pada main()
   WidgetsFlutterBinding.ensureInitialized();
 
-  // Inisialisasi Supabase Client
   await Supabase.initialize(
     url: supabaseUrl,
-    anonKey: supabaseAnonKey,
+    publishableKey: supabasePublishableKey,
   );
 
-  // Perakitan REST API Service (masih digunakan sampai Tahap 11)
-  final repository = CourseRepository(CourseApiService(apiBaseUrl));
+  // Mengubah data source aktif ke Supabase Service
+  final CourseDataSource dataSource = CourseSupabaseService();
+  final repository = CourseRepository(dataSource);
 
   runApp(
     ChangeNotifierProvider(
