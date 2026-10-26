@@ -9,8 +9,7 @@ import 'services/course_data_source.dart';
 import 'services/course_supabase_service.dart';
 
 const String studentName = 'Gede Ananda Karunia Putra';
-const String studentId = '2455011010';
-
+const String studentId = '2455011010!';
 // Masukkan URL & Publishable Key Supabase kamu
 const String supabaseUrl = 'https://bgvhjtvpypyvuqxxqxin.supabase.co';
 const String supabasePublishableKey = 'sb_publishable_ccOVXYMDl1S_KPHaZCqR5g_8iOcZL7A';
@@ -23,7 +22,7 @@ Future<void> main() async {
     publishableKey: supabasePublishableKey,
   );
 
-  // Mengubah data source aktif ke Supabase Service
+  // Sumber data aktif: Supabase Database (Tahap 16)
   final CourseDataSource dataSource = CourseSupabaseService();
   final repository = CourseRepository(dataSource);
 
