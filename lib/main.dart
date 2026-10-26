@@ -12,7 +12,7 @@ const String studentId = '2455011010';
 
 // Isikan URL Proyek & Anon Key Supabase kamu dari Dashboard Supabase
 const String supabaseUrl = 'https://bgvhjtvpypyvuqxxqxin.supabase.co';
-const String supabaseAnonKey = 'ss';
+const String supabaseAnonKey = 'sb_publishable_ccOVXYMDl1S_KPHaZCqR5g_8iOcZL7A';
 
 const String apiBaseUrl = 'https://jsonplaceholder.typicode.com';
 
