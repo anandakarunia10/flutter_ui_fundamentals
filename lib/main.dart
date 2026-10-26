@@ -1,3 +1,4 @@
+
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 
@@ -10,8 +11,19 @@ const String studentName = 'Gede Ananda Karunia Putra';
 const String studentId = '2455011010';
 
 void main() {
+  WidgetsFlutterBinding.ensureInitialized();
+
   final courseService = CourseService();
   final courseRepository = CourseRepository(courseService);
+
+  courseService
+      .testHttpGet(
+        studentName: studentName,
+        studentId: studentId,
+      )
+      .catchError((error) {
+        debugPrint('HTTP GET gagal: $error');
+      });
 
   runApp(
     ChangeNotifierProvider(
