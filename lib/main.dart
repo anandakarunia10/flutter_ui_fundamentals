@@ -6,6 +6,9 @@ import 'repositories/course_repository.dart';
 import 'screens/main_screen.dart';
 import 'services/course_service.dart';
 
+const String studentName = 'Gede Ananda Karunia Putra';
+const String studentId = '2455011010';
+
 void main() {
   final courseService = CourseService();
   final courseRepository = CourseRepository(courseService);
@@ -25,7 +28,7 @@ class CourseExplorerApp extends StatelessWidget {
   Widget build(BuildContext context) {
     return MaterialApp(
       debugShowCheckedModeBanner: false,
-      title: 'Course Explorer v2',
+      title: 'Course Data Manager',
       theme: ThemeData(
         useMaterial3: true,
         colorSchemeSeed: Colors.blue,
