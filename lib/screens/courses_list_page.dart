@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 import '../providers/course_provider.dart';
+import '../widgets/course_card.dart';
 import '../widgets/error_view.dart';
 
 class CoursesListPage extends StatelessWidget {
@@ -57,32 +58,10 @@ class CoursesListPage extends StatelessWidget {
           final course = provider.courses[index];
           final isFav = provider.isFavorite(course.code);
 
-          return Card(
-            elevation: 2,
-            margin: const EdgeInsets.symmetric(vertical: 6),
-            child: ListTile(
-              leading: CircleAvatar(
-                backgroundColor: course.status == 'active'
-                    ? Colors.green.shade100
-                    : Colors.blue.shade100,
-                child: Text(
-                  course.code.substring(0, course.code.length > 3 ? 3 : course.code.length),
-                  style: const TextStyle(fontSize: 12, fontWeight: FontWeight.bold),
-                ),
-              ),
-              title: Text(
-                course.title,
-                style: const TextStyle(fontWeight: FontWeight.bold),
-              ),
-              subtitle: Text('${course.credits} SKS • Status: ${course.status}'),
-              trailing: IconButton(
-                icon: Icon(
-                  isFav ? Icons.favorite : Icons.favorite_border,
-                  color: isFav ? Colors.red : Colors.grey,
-                ),
-                onPressed: () => provider.toggleFavorite(course.code),
-              ),
-            ),
+          return CourseCard(
+            course: course,
+            isFavorite: isFav,
+            onFavoriteToggle: () => provider.toggleFavorite(course.code),
           );
         },
       ),

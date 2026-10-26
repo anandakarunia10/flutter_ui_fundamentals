@@ -2,11 +2,6 @@ import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 import '../providers/course_provider.dart';
 import '../widgets/course_card.dart';
-import '../widgets/student_header_card.dart';
-import 'course_detail_page.dart';
-
-const String studentName = 'Gede Ananda Karunia Putra';
-const String studentId = '2455011010';
 
 class HomePage extends StatelessWidget {
   const HomePage({super.key});
@@ -14,36 +9,55 @@ class HomePage extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final provider = context.watch<CourseProvider>();
+    final courses = provider.courses;
+    final favCount = provider.favorites.length;
 
     return SingleChildScrollView(
       padding: const EdgeInsets.all(16.0),
       child: Column(
-        crossAxisAlignment: CrossAxisAlignment.stretch,
+        crossAxisAlignment: CrossAxisAlignment.start,
         children: [
-          StudentHeaderCard(
-            studentName: studentName,
-            studentId: studentId,
-            favoriteCount: provider.favorites.length,
+          Card(
+            color: Colors.blue.shade50,
+            child: const Padding(
+              padding: EdgeInsets.all(16.0),
+              child: Row(
+                children: [
+                  Icon(Icons.person, size: 40, color: Colors.blue),
+                  SizedBox(width: 12),
+                  Expanded(
+                    child: Column(
+                      crossAxisAlignment: CrossAxisAlignment.start,
+                      children: [
+                        Text(
+                          'Gede Ananda Karunia Putra',
+                          style: TextStyle(
+                              fontWeight: FontWeight.bold, fontSize: 16),
+                        ),
+                        Text('NIM: 2455011010'),
+                      ],
+                    ),
+                  ),
+                ],
+              ),
+            ),
           ),
           const SizedBox(height: 16),
           Row(
             children: [
               Expanded(
                 child: Card(
-                  color: Colors.blue.shade50,
                   child: Padding(
                     padding: const EdgeInsets.all(16.0),
                     child: Column(
-                      crossAxisAlignment: CrossAxisAlignment.start,
                       children: [
-                        const Text(
-                          'Courses',
-                          style: TextStyle(color: Colors.grey, fontWeight: FontWeight.bold),
-                        ),
-                        const SizedBox(height: 4),
+                        const Text('Total Course',
+                            style: TextStyle(color: Colors.grey)),
+                        const SizedBox(height: 8),
                         Text(
-                          '${provider.courses.length}',
-                          style: const TextStyle(fontSize: 24, fontWeight: FontWeight.bold, color: Colors.blue),
+                          '${courses.length}',
+                          style: const TextStyle(
+                              fontSize: 24, fontWeight: FontWeight.bold),
                         ),
                       ],
                     ),
@@ -53,20 +67,17 @@ class HomePage extends StatelessWidget {
               const SizedBox(width: 12),
               Expanded(
                 child: Card(
-                  color: Colors.orange.shade50,
                   child: Padding(
                     padding: const EdgeInsets.all(16.0),
                     child: Column(
-                      crossAxisAlignment: CrossAxisAlignment.start,
                       children: [
-                        const Text(
-                          'Favorites',
-                          style: TextStyle(color: Colors.grey, fontWeight: FontWeight.bold),
-                        ),
-                        const SizedBox(height: 4),
+                        const Text('Favorit',
+                            style: TextStyle(color: Colors.grey)),
+                        const SizedBox(height: 8),
                         Text(
-                          '${provider.favorites.length}',
-                          style: const TextStyle(fontSize: 24, fontWeight: FontWeight.bold, color: Colors.orange),
+                          '$favCount',
+                          style: const TextStyle(
+                              fontSize: 24, fontWeight: FontWeight.bold),
                         ),
                       ],
                     ),
@@ -76,49 +87,21 @@ class HomePage extends StatelessWidget {
             ],
           ),
           const SizedBox(height: 20),
-          if (provider.isLoading)
-            const Padding(
-              padding: EdgeInsets.all(32.0),
-              child: Center(child: CircularProgressIndicator()),
-            )
-          else if (provider.error != null)
-            Card(
-              color: Colors.red.shade50,
-              child: Padding(
-                padding: const EdgeInsets.all(16.0),
-                child: Text('Error: ${provider.error}', style: TextStyle(color: Colors.red.shade900)),
-              ),
-            )
-          else ...[
-            const Text(
-              'Ringkasan Kursus Aktif:',
-              style: TextStyle(fontWeight: FontWeight.bold, fontSize: 16),
-            ),
-            const SizedBox(height: 10),
-            ...provider.courses.map((course) {
-              final isFav = provider.isFavorite(course.code);
-              return InkWell(
-                onTap: () {
-                  Navigator.push(
-                    context,
-                    MaterialPageRoute(
-                      builder: (_) => CourseDetailPage(course: course),
-                    ),
-                  );
-                },
-                child: CourseCard(
-                  code: course.code,
-                  title: course.title,
-                  credits: course.credits,
-                  status: course.status,
-                  isFavorite: isFav,
-                  onFavoriteToggle: () {
-                    context.read<CourseProvider>().toggleFavorite(course.code);
-                  },
-                ),
+          const Text(
+            'Ringkasan Course Terbaru',
+            style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold),
+          ),
+          const SizedBox(height: 8),
+          if (courses.isEmpty)
+            const Text('Belum ada data course.')
+          else
+            ...courses.take(3).map((course) {
+              return CourseCard(
+                course: course,
+                isFavorite: provider.isFavorite(course.code),
+                onFavoriteToggle: () => provider.toggleFavorite(course.code),
               );
             }),
-          ],
         ],
       ),
     );
