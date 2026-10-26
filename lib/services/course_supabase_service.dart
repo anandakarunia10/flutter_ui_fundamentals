@@ -21,7 +21,15 @@ class CourseSupabaseService implements CourseDataSource {
 
   // Stub sementara agar kelas memenuhi kontrak CourseDataSource (Tahap 13-15)
   @override
-  Future<Course> createCourse(Course course) => throw UnimplementedError();
+  Future<Course> createCourse(Course course) async {
+    final response = await supabase
+        .from('courses')
+        .insert(course.toJson())
+        .select()
+        .single();
+
+    return Course.fromJson(response);
+  }
 
   @override
   Future<void> updateCourse(int id, Course course) => throw UnimplementedError();

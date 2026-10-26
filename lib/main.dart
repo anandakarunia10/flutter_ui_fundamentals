@@ -12,8 +12,8 @@ const String studentName = 'Gede Ananda Karunia Putra';
 const String studentId = '2455011010';
 
 // Masukkan URL & Publishable Key Supabase kamu
-const String supabaseUrl = 'https://YOUR_SUPABASE_PROJECT_ID.supabase.co';
-const String supabasePublishableKey = 'YOUR_SUPABASE_ANON_OR_PUBLISHABLE_KEY';
+const String supabaseUrl = 'https://bgvhjtvpypyvuqxxqxin.supabase.co';
+const String supabasePublishableKey = 'sb_publishable_ccOVXYMDl1S_KPHaZCqR5g_8iOcZL7A';
 
 Future<void> main() async {
   WidgetsFlutterBinding.ensureInitialized();
