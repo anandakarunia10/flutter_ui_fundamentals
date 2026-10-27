@@ -9,7 +9,7 @@ import 'services/course_data_source.dart';
 import 'services/course_supabase_service.dart';
 
 const String studentName = 'Gede Ananda Karunia Putra';
-const String studentId = '2455011010!';
+const String studentId = '2455011010';
 // Masukkan URL & Publishable Key Supabase kamu
 const String supabaseUrl = 'https://bgvhjtvpypyvuqxxqxin.supabase.co';
 const String supabasePublishableKey = 'sb_publishable_ccOVXYMDl1S_KPHaZCqR5g_8iOcZL7A';
