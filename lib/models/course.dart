@@ -19,7 +19,7 @@ class Course {
       id: json['id'] as int?,
       code: json['code'] as String? ?? 'MOB0$itemCodeId',
       title: json['title'] as String? ?? 'Course $itemCodeId',
-      credits: (json['credits'] as num?)?.toInt() ?? ((itemCodeId % 3) + 2),
+      credits: (json['credits_salah'] as num?)?.toInt() ?? ((itemCodeId % 3) + 2),
       status: (json['status'] as String?) ?? (itemCodeId % 2 == 0 ? 'active' : 'planned'),
     );
   }
