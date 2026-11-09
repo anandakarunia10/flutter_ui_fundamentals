@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import '../services/auth_service.dart';
+import '../services/kos_service.dart';
 import '../services/profile_service.dart';
 import '../widgets/role_guard.dart';
 import 'login_page.dart';
@@ -13,6 +14,7 @@ class HomePage extends StatefulWidget {
 
 class _HomePageState extends State<HomePage> {
   late final Future<UserProfile?> _profileFuture;
+  final KosService _kosService = KosService();
 
   @override
   void initState() {
@@ -31,6 +33,8 @@ class _HomePageState extends State<HomePage> {
 
   @override
   Widget build(BuildContext context) {
+    final myId = AuthService.instance.currentUser?.id;
+
     return FutureBuilder<UserProfile?>(
       future: _profileFuture,
       builder: (context, snap) {
@@ -56,31 +60,62 @@ class _HomePageState extends State<HomePage> {
               ),
             ],
           ),
-          body: ListView(
+          body: Column(
             children: [
               ListTile(
                 leading: const Icon(Icons.person),
                 title: Text(p.name.isEmpty ? p.email : p.name),
-                subtitle: Text('${p.email} • ${p.role}'),
+                subtitle: Text('${p.email} • Gede Ananda Karunia Putra (2455011010)'),
               ),
               const Divider(),
-              const ListTile(
-                leading: Icon(Icons.list),
-                title: Text('Daftar Kos'),
+              Expanded(
+                child: FutureBuilder<List>(
+                  future: _kosService.fetchAll(),
+                  builder: (context, kosSnap) {
+                    if (kosSnap.connectionState != ConnectionState.done) {
+                      return const Center(child: CircularProgressIndicator());
+                    }
+                    final items = kosSnap.data ?? [];
+                    if (items.isEmpty) {
+                      return const Center(child: Text('Belum ada data kos.'));
+                    }
+                    return ListView.builder(
+                      itemCount: items.length,
+                      itemBuilder: (context, i) {
+                        final kos = items[i];
+                        final isMine = kos['owner_id'] == myId;
+                        return ListTile(
+                          title: Text(kos['name'] ?? '-'),
+                          subtitle: Text(
+                              '${kos['address'] ?? '-'} • Rp ${kos['price'] ?? 0}'),
+                          trailing: isMine
+                              ? Row(
+                                  mainAxisSize: MainAxisSize.min,
+                                  children: [
+                                    IconButton(
+                                      icon: const Icon(Icons.edit),
+                                      onPressed: () {
+                                        // TODO: Buka form edit kos
+                                      },
+                                    ),
+                                    IconButton(
+                                      icon: const Icon(Icons.delete),
+                                      onPressed: () async {
+                                        await _kosService.delete(kos['id']);
+                                        setState(() {});
+                                      },
+                                    ),
+                                  ],
+                                )
+                              : null,
+                        );
+                      },
+                    );
+                  },
+                ),
               ),
-              if (p.isOwner || p.isAdmin)
-                const ListTile(
-                  leading: Icon(Icons.home_work),
-                  title: Text('My Kos'),
-                ),
-              if (p.isAdmin)
-                const ListTile(
-                  leading: Icon(Icons.admin_panel_settings),
-                  title: Text('Kelola Data (Admin)'),
-                ),
             ],
           ),
-          // Tombol "Tambah Kos" hanya tampil jika role owner atau admin
           floatingActionButton: RoleGuard(
             role: p.role,
             allowed: const ['owner', 'admin'],
