@@ -1,52 +1,26 @@
 import 'package:flutter/material.dart';
-import 'package:provider/provider.dart';
 import 'package:supabase_flutter/supabase_flutter.dart';
-
-import 'providers/course_provider.dart';
-import 'repositories/course_repository.dart';
-import 'screens/main_screen.dart';
-import 'services/course_data_source.dart';
-import 'services/course_supabase_service.dart';
-
-const String studentName = 'Gede Ananda Karunia Putra';
-const String studentId = '2455011010';
-// Masukkan URL & Publishable Key Supabase kamu
-const String supabaseUrl = 'https://bgvhjtvpypyvuqxxqxin.supabase.co';
-const String supabasePublishableKey = 'sb_publishable_ccOVXYMDl1S_KPHaZCqR5g_8iOcZL7A';
+import 'pages/login_page.dart';
 
 Future<void> main() async {
   WidgetsFlutterBinding.ensureInitialized();
-
   await Supabase.initialize(
-    url: supabaseUrl,
-    publishableKey: supabasePublishableKey,
+    url: 'https://bgvhjtvpypyvuqxxqxin.supabase.co',
+    anonKey: 'sb_publishable_ccOVXYMDl1S_KPHaZCqR5g_8iOcZL7A',
   );
-
-  // Sumber data aktif: Supabase Database (Tahap 16)
-  final CourseDataSource dataSource = CourseSupabaseService();
-  final repository = CourseRepository(dataSource);
-
-  runApp(
-    ChangeNotifierProvider(
-      create: (_) => CourseProvider(repository)..loadCourses(),
-      child: const CourseExplorerApp(),
-    ),
-  );
+  runApp(const KosFinderApp());
 }
 
-class CourseExplorerApp extends StatelessWidget {
-  const CourseExplorerApp({super.key});
+class KosFinderApp extends StatelessWidget {
+  const KosFinderApp({super.key});
 
   @override
   Widget build(BuildContext context) {
     return MaterialApp(
       debugShowCheckedModeBanner: false,
-      title: 'Course Data Manager',
-      theme: ThemeData(
-        useMaterial3: true,
-        colorSchemeSeed: Colors.blue,
-      ),
-      home: const MainScreen(),
+      title: 'KosFinder',
+      theme: ThemeData(colorSchemeSeed: Colors.indigo, useMaterial3: true),
+      home: const LoginPage(),
     );
   }
 }
