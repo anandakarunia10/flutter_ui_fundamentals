@@ -16,17 +16,28 @@ class NotificationService {
       sound: true,
     );
 
-    debugPrint(
-      '[FCM] Authorization Status: ${settings.authorizationStatus}',
-    );
+    debugPrint('[FCM] Authorization: ${settings.authorizationStatus}');
 
-    if (settings.authorizationStatus == AuthorizationStatus.authorized) {
+    if (settings.authorizationStatus == AuthorizationStatus.authorized ||
+        settings.authorizationStatus == AuthorizationStatus.provisional) {
       debugPrint('[FCM] Izin notifikasi diberikan');
-    } else if (settings.authorizationStatus ==
-        AuthorizationStatus.provisional) {
-      debugPrint('[FCM] Izin notifikasi provisional');
+
+      await getFCMToken();
+      listenTokenRefresh();
     } else {
       debugPrint('[FCM] Izin notifikasi ditolak');
     }
+  }
+
+  Future<void> getFCMToken() async {
+    final String? token = await _fcm.getToken();
+
+    debugPrint('[FCM Token] $token');
+  }
+
+  void listenTokenRefresh() {
+    _fcm.onTokenRefresh.listen((String token) {
+      debugPrint('[FCM Token Refresh] $token');
+    });
   }
 }
