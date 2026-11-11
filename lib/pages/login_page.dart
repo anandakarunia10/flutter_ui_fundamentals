@@ -1,6 +1,8 @@
+
 import 'package:flutter/material.dart';
 import 'package:supabase_flutter/supabase_flutter.dart';
 import '../services/auth_service.dart';
+import '../services/notification_service.dart';
 import 'home_page.dart';
 import 'register_page.dart';
 
@@ -25,18 +27,35 @@ class _LoginPageState extends State<LoginPage> {
   }
 
   void _showMessage(String msg) {
-    ScaffoldMessenger.of(context).showSnackBar(SnackBar(content: Text(msg)));
+    ScaffoldMessenger.of(context).showSnackBar(
+      SnackBar(content: Text(msg)),
+    );
   }
 
   Future<void> _login() async {
     if (!_formKey.currentState!.validate()) return;
+
     setState(() => _loading = true);
+
     try {
       await AuthService.instance.login(
         email: _emailC.text.trim(),
         password: _passC.text,
       );
+
+      // Simpan FCM Token setelah pengguna berhasil login.
+      try {
+        final token = await NotificationService.instance.getToken();
+
+        if (token != null) {
+          await NotificationService.instance.saveTokenToSupabase(token);
+        }
+      } catch (e) {
+        debugPrint('[FCM] Gagal menyimpan token: $e');
+      }
+
       if (!mounted) return;
+
       Navigator.of(context).pushAndRemoveUntil(
         MaterialPageRoute(builder: (_) => const HomePage()),
         (route) => false,
@@ -44,7 +63,9 @@ class _LoginPageState extends State<LoginPage> {
     } on AuthException catch (e) {
       _showMessage(e.message);
     } catch (_) {
-      _showMessage('Terjadi kesalahan. Periksa koneksi internet Anda.');
+      _showMessage(
+        'Terjadi kesalahan. Periksa koneksi internet Anda.',
+      );
     } finally {
       if (mounted) setState(() => _loading = false);
     }
@@ -89,7 +110,9 @@ class _LoginPageState extends State<LoginPage> {
               ),
               TextButton(
                 onPressed: () => Navigator.of(context).push(
-                  MaterialPageRoute(builder: (_) => const RegisterPage()),
+                  MaterialPageRoute(
+                    builder: (_) => const RegisterPage(),
+                  ),
                 ),
                 child: const Text('Belum punya akun? Register'),
               ),
