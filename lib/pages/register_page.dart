@@ -90,7 +90,7 @@ class _RegisterPageState extends State<RegisterPage> {
               ),
               const SizedBox(height: 12),
               DropdownButtonFormField<String>(
-                value: _role,
+                initialValue: _role,
                 decoration: const InputDecoration(labelText: 'Daftar sebagai'),
                 items: const [
                   DropdownMenuItem(value: 'seeker', child: Text('Pencari Kos')),
